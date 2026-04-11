@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ясна — Встречи и переговоры</title>
+  <meta name="description" content="Инструмент Ясны для анализа атмосферы встречи, облаков, проблем и способов управленческого воздействия.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Ясна • Воздух • Переговоры</p>
+        <h1>Лаборатория встреч и переговоров по Ясне</h1>
+        <p class="lede">Инструмент для создания отдельных Ясн, чтения атмосферы встречи, диагностики облаков и синтеза двух Ясн по 12 полочкам.</p>
+      </div>
+      <div class="topbar__actions">
+        <button class="btn btn--ghost" id="exportLibraryBtn">Экспорт библиотеки</button>
+        <label class="btn btn--ghost btn--file">
+          Импорт JSON
+          <input type="file" id="importLibraryInput" accept="application/json">
+        </label>
+        <button class="btn btn--ghost" id="duplicateYasnaBtn">Дублировать как отдельную</button>
+        <button class="btn btn--ghost" id="openEditBtn">Редактировать активную</button>
+        <button class="btn btn--danger" id="deleteYasnaBtn">Удалить активную</button>
+        <button class="btn btn--primary" id="openCreateBtn">Создать отдельную Ясну</button>
+      </div>
+    </header>
+
+    <section class="workspace-intro panel">
+      <div>
+        <h2>Продуктовая рамка</h2>
+        <p>Базовая логика инструмента строится вокруг четырёх переговорных Ясн: <strong>атмосфера встречи</strong>, <strong>облака</strong>, <strong>образы проблем</strong> и <strong>управленческие ветры</strong>. Каждая из них разложена по 12 полочкам исходного цикла Ясны.</p>
+      </div>
+      <div class="intro-grid">
+        <article>
+          <h3>1. Атмосфера</h3>
+          <p>Внешняя оболочка встречи как подобие явлений атмосферы Земли.</p>
+        </article>
+        <article>
+          <h3>2. Облака</h3>
+          <p>Форма, которую принимает напряжение и конденсация смысла в разговоре.</p>
+        </article>
+        <article>
+          <h3>3. Проблемы</h3>
+          <p>Перевод облаков в точные образы проблем и типов переговорных узлов.</p>
+        </article>
+        <article>
+          <h3>4. Решения</h3>
+          <p>Подбор управленческого ветра, антициклона или громоотвода по каждой полочке.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="controls panel">
+      <div class="controls__group">
+        <span class="controls__label">Режим</span>
+        <div class="segmented" id="modeSwitch">
+          <button class="segmented__item is-active" data-mode="single">Одна Ясна</button>
+          <button class="segmented__item" data-mode="synthesis">Синтез двух Ясн</button>
+        </div>
+      </div>
+      <div class="controls__group controls__group--selectors">
+        <label>
+          <span class="controls__label">Основная Ясна</span>
+          <select id="primarySelect"></select>
+        </label>
+        <label id="secondarySelectWrap">
+          <span class="controls__label">Вторая Ясна</span>
+          <select id="secondarySelect"></select>
+        </label>
+      </div>
+      <div class="controls__group controls__group--summary">
+        <span class="controls__label">Что показывает текущий экран</span>
+        <p id="modeSummary"></p>
+      </div>
+    </section>
+
+    <main class="main-grid">
+      <aside class="panel sidebar">
+        <div class="panel__head">
+          <h2>Библиотека Ясн</h2>
+          <span class="pill" id="yasnaCountBadge"></span>
+        </div>
+        <p class="muted">Здесь хранятся встроенные и созданные вами отдельные Ясны. Выберите одну для самостоятельного чтения или две для синтеза.</p>
+        <div class="library-list" id="libraryList"></div>
+
+        <section class="library-tools">
+          <h3>Управление активной Ясной</h3>
+          <p class="muted" id="libraryActionHint">Для встроенных Ясн доступны чтение, синтез и дублирование в отдельную пользовательскую Ясну. Для пользовательских Ясн доступно полное редактирование 12 полочек.</p>
+          <div class="library-tools__actions">
+            <button class="btn btn--ghost" id="sidebarDuplicateBtn">Дублировать</button>
+            <button class="btn btn--ghost" id="sidebarEditBtn">Редактировать</button>
+            <button class="btn btn--danger" id="sidebarDeleteBtn">Удалить</button>
+          </div>
+        </section>
+      </aside>
+
+      <section class="panel stage-panel">
+        <div class="panel__head panel__head--spread">
+          <div>
+            <h2 id="stageTitle">Полочки Ясны</h2>
+            <p class="muted" id="stageSubtitle"></p>
+          </div>
+          <div class="legend">
+            <span><i class="legend__dot legend__dot--primary"></i> Основная</span>
+            <span><i class="legend__dot legend__dot--secondary"></i> Вторая</span>
+            <span><i class="legend__dot legend__dot--selected"></i> Активная полочка</span>
+          </div>
+        </div>
+
+        <div class="yasna-stage" id="yasnaStage">
+          <div class="yasna-stage__center" id="stageCenterCard"></div>
+          <div class="yasna-orbit" id="yasnaOrbit"></div>
+        </div>
+
+        <div class="stage-footer" id="stageFooter"></div>
+      </section>
+
+      <aside class="panel detail-panel">
+        <div class="panel__head">
+          <h2>Карточка полочки</h2>
+          <span class="pill" id="shelfBadge"></span>
+        </div>
+        <div id="detailCard"></div>
+      </aside>
+    </main>
+
+    <section class="panel synthesis-panel" id="synthesisPanel">
+      <div class="panel__head">
+        <h2>Синтез двух Ясн</h2>
+        <span class="pill pill--accent">Связи между полочками</span>
+      </div>
+      <div id="synthesisContent"></div>
+    </section>
+
+    <section class="panel constructor-panel">
+      <div class="panel__head panel__head--spread">
+        <div>
+          <h2>Конструктор карточки</h2>
+          <p class="muted">Выберите механики и сформируйте рабочую карточку для конкретной полочки или пары полочек.</p>
+        </div>
+        <button class="btn btn--ghost" id="copyCardBtn">Скопировать карточку</button>
+      </div>
+
+      <div class="constructor-layout">
+        <form class="constructor-options" id="constructorOptions">
+          <label class="check-row"><input type="checkbox" value="summary" checked> <span>Краткое ядро</span></label>
+          <label class="check-row"><input type="checkbox" value="signals" checked> <span>Сигналы и признаки</span></label>
+          <label class="check-row"><input type="checkbox" value="management" checked> <span>Управленческий приём</span></label>
+          <label class="check-row"><input type="checkbox" value="questions" checked> <span>Диагностические вопросы</span></label>
+          <label class="check-row"><input type="checkbox" value="risks"> <span>Риски и ошибки</span></label>
+          <label class="check-row"><input type="checkbox" value="cross"> <span>Опорный крест</span></label>
+          <label class="check-row"><input type="checkbox" value="fire"> <span>Стихия огня</span></label>
+          <label class="check-row"><input type="checkbox" value="synthesis" checked> <span>Поле синтеза</span></label>
+        </form>
+        <article class="card-preview" id="constructorCard"></article>
+      </div>
+    </section>
+
+    <section class="panel weather-panel">
+      <div class="panel__head panel__head--spread">
+        <div>
+          <h2>Контур встречи и прогноз атмосферы</h2>
+          <p class="muted">Заполняйте паспорт конкретной встречи, а справа получайте рабочее чтение активной полочки, связки четырёх встроенных переговорных Ясн и приметы развития разговора.</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn btn--ghost" id="copyForecastBtn">Скопировать прогноз</button>
+          <button class="btn btn--ghost" id="resetWorkspaceBtn">Очистить черновик</button>
+        </div>
+      </div>
+
+      <div class="weather-layout">
+        <form class="workspace-form" id="workspaceForm">
+          <label>
+            <span>Название встречи</span>
+            <input id="workspaceMeetingName" name="meetingName" type="text" maxlength="140" placeholder="Например, Переговоры с ключевым поставщиком">
+          </label>
+
+          <label>
+            <span>Участники и роли</span>
+            <textarea id="workspaceParticipants" name="participants" rows="4" placeholder="Кто участвует, кто принимает решение, кто влияет косвенно"></textarea>
+          </label>
+
+          <label>
+            <span>Цель встречи</span>
+            <textarea id="workspaceGoal" name="goal" rows="4" placeholder="Какой результат должен быть достигнут по итогам разговора"></textarea>
+          </label>
+
+          <label>
+            <span>Ставки, ограничения, риски</span>
+            <textarea id="workspaceStakes" name="stakes" rows="4" placeholder="Что на кону, какие рамки нельзя нарушать, где скрытое давление"></textarea>
+          </label>
+
+          <label>
+            <span>Рабочие заметки</span>
+            <textarea id="workspaceNotes" name="notes" rows="6" placeholder="Фиксируйте наблюдения, цитаты, странные сигналы, слабые приметы"></textarea>
+          </label>
+        </form>
+
+        <div class="workspace-output" id="workspaceForecastOutput">
+          <article class="forecast-card" id="workspaceSnapshot"></article>
+          <article class="forecast-card" id="workspaceForecast"></article>
+          <article class="forecast-card" id="workspaceOmens"></article>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <dialog class="modal" id="createDialog">
+    <form method="dialog" class="modal__card" id="createForm">
+      <div class="modal__head">
+        <div>
+          <p class="eyebrow">Новая отдельная Ясна</p>
+          <h2>Создание своей Ясны</h2>
+        </div>
+        <button class="btn btn--ghost" value="cancel">Закрыть</button>
+      </div>
+
+      <div class="modal__grid">
+        <label>
+          <span>Название</span>
+          <input name="title" required placeholder="Например, Ясна команды проекта">
+        </label>
+        <label>
+          <span>Короткое название</span>
+          <input name="shortTitle" required placeholder="Команда">
+        </label>
+        <label>
+          <span>Категория</span>
+          <input name="category" value="Пользовательские">
+        </label>
+        <label>
+          <span>Фокус</span>
+          <input name="focus" placeholder="Что рассматривает эта Ясна">
+        </label>
+        <label class="field--wide">
+          <span>Подзаголовок</span>
+          <input name="subtitle" placeholder="Краткая формула предметной области">
+        </label>
+        <label class="field--wide">
+          <span>Описание</span>
+          <textarea name="description" rows="3" placeholder="Какую задачу решает новая Ясна и зачем она нужна"></textarea>
+        </label>
+        <label class="field--wide">
+          <span>Источник структуры</span>
+          <select name="templateId" id="templateSelect"></select>
+        </label>
+      </div>
+
+      <div class="modal__foot">
+        <p class="muted">Новая Ясна создаётся как отдельный объект в библиотеке и наследует 12 полочек выбранного шаблона, чтобы вы могли сразу редактировать и синтезировать её с другими.</p>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" value="cancel">Отмена</button>
+          <button class="btn btn--primary" id="saveYasnaBtn" value="default">Сохранить Ясну</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal modal--wide" id="editDialog">
+    <form method="dialog" class="modal__card modal__card--wide" id="editForm">
+      <div class="modal__head">
+        <div>
+          <p class="eyebrow">Редактор отдельной Ясны</p>
+          <h2 id="editDialogTitle">Редактирование активной Ясны</h2>
+        </div>
+        <button class="btn btn--ghost" value="cancel">Закрыть</button>
+      </div>
+
+      <div class="editor-layout">
+        <section class="editor-section">
+          <h3>Паспорт Ясны</h3>
+          <div class="modal__grid modal__grid--compact">
+            <label>
+              <span>Название</span>
+              <input name="title" id="editTitle" required>
+            </label>
+            <label>
+              <span>Короткое название</span>
+              <input name="shortTitle" id="editShortTitle" required>
+            </label>
+            <label>
+              <span>Категория</span>
+              <input name="category" id="editCategory">
+            </label>
+            <label>
+              <span>Фокус</span>
+              <input name="focus" id="editFocus">
+            </label>
+            <label class="field--wide">
+              <span>Подзаголовок</span>
+              <input name="subtitle" id="editSubtitle">
+            </label>
+            <label class="field--wide">
+              <span>Описание</span>
+              <textarea name="description" id="editDescription" rows="3"></textarea>
+            </label>
+            <label class="field--wide">
+              <span>Подсказка для синтеза</span>
+              <textarea name="synthesisHint" id="editSynthesisHint" rows="3"></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section class="editor-section">
+          <div class="editor-section__head">
+            <div>
+              <h3>Редактор полочек</h3>
+              <p class="muted">Изменяйте названия и содержание каждой из 12 полочек отдельной Ясны. Активная полочка сцены подставляется автоматически.</p>
+            </div>
+            <label class="editor-shelf-select">
+              <span>Полочка</span>
+              <select id="editShelfSelect"></select>
+            </label>
+          </div>
+
+          <div class="shelf-editor-meta" id="editShelfMeta"></div>
+
+          <div class="modal__grid modal__grid--compact">
+            <label>
+              <span>Название полочки</span>
+              <input name="shelfTitle" id="editShelfTitle" required>
+            </label>
+            <label class="field--wide">
+              <span>Суть</span>
+              <textarea name="shelfEssence" id="editShelfEssence" rows="3" required></textarea>
+            </label>
+            <label class="field--wide">
+              <span>Сигналы и признаки</span>
+              <textarea name="shelfSignals" id="editShelfSignals" rows="3" required></textarea>
+            </label>
+            <label class="field--wide">
+              <span>Управление</span>
+              <textarea name="shelfManagement" id="editShelfManagement" rows="3" required></textarea>
+            </label>
+            <label class="field--wide">
+              <span>Теги полочки</span>
+              <input name="shelfTags" id="editShelfTags" placeholder="через запятую">
+            </label>
+          </div>
+        </section>
+      </div>
+
+      <div class="modal__foot">
+        <p class="muted">Редактируются только пользовательские Ясны. Встроенные Ясны сначала нужно дублировать в библиотеку, а затем дорабатывать как отдельные объекты.</p>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" value="cancel">Отмена</button>
+          <button class="btn btn--primary" id="saveEditBtn" value="default">Сохранить изменения</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
