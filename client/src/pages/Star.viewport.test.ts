@@ -355,7 +355,7 @@ describe("Star reduced desktop viewport interactions", () => {
     expect(overlayAfterPoint?.className).toContain("lg:inset-0");
     expect(overlayAfterPoint?.textContent).toContain("Растекание");
 
-    const waterMechanicButton = findButtonByText(container, "Вода");
+    const waterMechanicButton = container.querySelector('[data-testid="star-mechanic-button-water-flow"]') as HTMLButtonElement | null;
     expect(waterMechanicButton).toBeTruthy();
 
     await act(async () => {
