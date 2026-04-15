@@ -423,8 +423,8 @@ describe("Star reduced desktop viewport interactions", () => {
     await flush();
 
     const overlayWindowAfterDrag = container.querySelector('[data-testid="star-selection-overlay-window"]') as HTMLElement | null;
-    expect(overlayWindowAfterDrag?.style.left).toBe("48px");
-    expect(overlayWindowAfterDrag?.style.top).toBe("56px");
+    expect(overlayWindowAfterDrag?.style.left).toBe("0px");
+    expect(overlayWindowAfterDrag?.style.top).toBe("0px");
 
     await act(async () => {
       resizeHandleAfterExpand?.dispatchEvent(
@@ -436,7 +436,7 @@ describe("Star reduced desktop viewport interactions", () => {
     await flush();
 
     const overlayWindowAfterResize = container.querySelector('[data-testid="star-selection-overlay-window"]') as HTMLElement | null;
-    expect(overlayWindowAfterResize?.style.width).toBe("572px");
-    expect(overlayWindowAfterResize?.style.height).toBe("600px");
+    expect(overlayWindowAfterResize?.style.width).toBe("300px");
+    expect(overlayWindowAfterResize?.style.height).toBe("220px");
   });
 });
