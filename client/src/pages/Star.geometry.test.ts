@@ -35,14 +35,14 @@ describe("Star geometry regressions", () => {
     });
   });
 
-  it("uses a single full-width star scene after moving mechanics into the header", () => {
+  it("uses a larger single full-width star scene after moving mechanics into the header", () => {
     const layout = getStarLayoutClasses();
 
-    expect(layout.containerMax).toContain("min(78svh,1120px)");
-    expect(layout.sceneMin).toContain("72svh");
-    expect(layout.sceneMin).toContain("sm:min-h-[920px]");
-    expect(layout.sceneInnerMin).toContain("68svh");
-    expect(layout.sceneInnerMin).toContain("sm:min-h-[900px]");
+    expect(layout.containerMax).toContain("min(84svh,1280px)");
+    expect(layout.sceneMin).toContain("78svh");
+    expect(layout.sceneMin).toContain("sm:min-h-[980px]");
+    expect(layout.sceneInnerMin).toContain("74svh");
+    expect(layout.sceneInnerMin).toContain("sm:min-h-[940px]");
     expect(layout.scenePadding).toContain("px-1.5");
     expect(layout.gridTemplate).toBe("mt-4 flex min-h-0 flex-1");
     expect(layout.sideColumnDesktopLayout).toContain("lg:max-h-full");
@@ -54,9 +54,9 @@ describe("Star geometry regressions", () => {
   it("locks the current scene to a medium desktop scale instead of re-expanding it on larger breakpoints", () => {
     const layout = getStarLayoutClasses();
 
-    expect(layout.containerMax).toBe("h-full w-full max-h-[min(78svh,1120px)] max-w-full lg:w-auto lg:max-h-[1120px]");
-    expect(layout.sceneMin).toBe("min-h-[72svh] sm:min-h-[920px]");
-    expect(layout.sceneInnerMin).toBe("min-h-[68svh] sm:min-h-[900px]");
+    expect(layout.containerMax).toBe("h-full w-full max-h-[min(84svh,1280px)] max-w-full lg:w-auto lg:max-h-[1280px]");
+    expect(layout.sceneMin).toBe("min-h-[78svh] sm:min-h-[980px]");
+    expect(layout.sceneInnerMin).toBe("min-h-[74svh] sm:min-h-[940px]");
     expect(layout.containerMax).not.toContain("xl:max-h");
     expect(layout.containerMax).not.toContain("2xl:max-h");
     expect(layout.sceneMin).not.toContain("md:min-h");
