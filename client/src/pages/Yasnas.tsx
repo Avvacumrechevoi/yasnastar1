@@ -49,7 +49,7 @@ function YasnasPage() {
   const isError = !STATIC_PREVIEW_MODE && catalogQuery.isError;
 
   return (
-    <main className="min-h-screen bg-[#040404] text-white">
+    <main className="min-h-screen bg-[#040404] text-white" data-testid="yasnas-page">
       <div className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,226,125,0.14),transparent_22%),radial-gradient(circle_at_90%_10%,rgba(255,255,255,0.06),transparent_18%)]" />
         <div className="yasna-grid pointer-events-none absolute inset-0 opacity-30" />
@@ -165,7 +165,10 @@ function YasnasPage() {
                   </p>
                 </div>
 
-                <div className="flex w-full max-w-[26rem] items-center gap-3 rounded-[22px] border border-white/10 bg-black/25 px-4 py-3">
+                <div
+                  className="flex w-full max-w-[26rem] items-center gap-3 rounded-[22px] border border-white/10 bg-black/25 px-4 py-3"
+                  data-testid="yasnas-search"
+                >
                   <Search className="h-4 w-4 shrink-0 text-white/42" />
                   <input
                     type="search"
@@ -173,6 +176,7 @@ function YasnasPage() {
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder="Поиск по названию, семейству или механике"
                     className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/35"
+                    data-testid="yasnas-search-input"
                   />
                 </div>
               </div>
@@ -191,6 +195,7 @@ function YasnasPage() {
                           ? "border-[#38e27d]/45 bg-[#38e27d]/12 text-white shadow-[0_0_30px_rgba(56,226,125,0.14)]"
                           : "border-white/10 bg-white/[0.03] text-white/68 hover:border-white/22 hover:bg-white/[0.05] hover:text-white"
                       }`}
+                      data-testid={`yasnas-filter-${type}`}
                     >
                       {type}
                     </button>
@@ -265,11 +270,12 @@ function YasnasPage() {
                 </p>
               </div>
             ) : (
-              <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-testid="yasnas-grid">
                 {filteredItems.map(item => (
                   <article
                     key={item.id}
                     className="group rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.02)_100%)] p-5 shadow-[0_18px_64px_rgba(0,0,0,0.24)] transition duration-300 hover:-translate-y-1 hover:border-[#38e27d]/30 hover:shadow-[0_24px_90px_rgba(0,0,0,0.34)]"
+                    data-testid={`yasna-card-${item.id}`}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>

@@ -213,7 +213,10 @@ function Home() {
             <div className="pointer-events-none absolute left-1/2 top-[38%] h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#38e27d]/[0.08] blur-3xl" />
             <div className="pointer-events-none absolute inset-x-[18%] bottom-[-12%] h-44 rounded-full bg-white/[0.03] blur-3xl" />
 
-            <div className="relative mx-auto flex w-full max-w-[980px] flex-col items-center text-center">
+            <div
+              className="relative mx-auto flex w-full max-w-[980px] flex-col items-center text-center"
+              data-testid="home-hero"
+            >
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-[#38e27d]">
                 Ясна для встреч и переговоров
               </p>
@@ -230,6 +233,7 @@ function Home() {
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href="/star"
+                  data-testid="home-open-star"
                   className="inline-flex items-center gap-2 rounded-full bg-[#38e27d] px-5 py-3 text-sm font-semibold text-black transition hover:translate-y-[-1px] hover:bg-[#4bef8d]"
                 >
                   Открыть звезду механик
@@ -237,6 +241,7 @@ function Home() {
                 </Link>
                 <Link
                   href="/yasnas"
+                  data-testid="home-open-catalog"
                   className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white transition hover:border-white/24 hover:bg-white/[0.08]"
                 >
                   Смотреть каталог Ясн

@@ -480,6 +480,7 @@ function StarPointLabelOverlay({
       type="button"
       onClick={onSelect}
       title={tooltip || `${POINT_TOOLTIP_FALLBACK} ${pointIndex}`}
+      data-testid={`star-point-label-${pointIndex}`}
       className={`absolute z-[3] flex font-semibold tracking-[0.01em] transition ${
         isSelected
           ? "text-white"
@@ -2100,6 +2101,7 @@ export default function Star() {
                         key={`node-${point.index}`}
                         onClick={() => selectPoint(point.index)}
                         style={{ cursor: "pointer" }}
+                        data-testid={`star-point-${point.index}`}
                       >
                         <title>{tooltip || `${POINT_TOOLTIP_FALLBACK} ${point.index}`}</title>
                         <line
