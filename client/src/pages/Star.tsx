@@ -275,7 +275,7 @@ const STAR_CONTAINER_MAX = "h-full w-full max-h-[min(78svh,1120px)] max-w-full l
 const STAR_SCENE_MIN = "min-h-[72svh] sm:min-h-[920px]";
 const STAR_SCENE_INNER_MIN = "min-h-[68svh] sm:min-h-[900px]";
 const STAR_SCENE_PADDING = "px-1.5 py-1.5 sm:px-2.5 sm:py-2.5";
-const GRID_TEMPLATE = "mt-4 grid min-h-0 flex-1 grid-cols-1 gap-2 lg:h-[calc(100vh-9.5rem)] lg:max-h-[calc(100vh-9.5rem)] lg:min-h-0 lg:grid-cols-[108px_minmax(0,1fr)] lg:items-stretch lg:overflow-hidden xl:grid-cols-[116px_minmax(0,1fr)] 2xl:grid-cols-[124px_minmax(0,1fr)]";
+const GRID_TEMPLATE = "mt-4 flex min-h-0 flex-1";
 const SIDE_COLUMN_DESKTOP_LAYOUT = "lg:h-full lg:max-h-full lg:self-stretch lg:overflow-y-auto lg:overscroll-contain";
 const CENTER_COLUMN_DESKTOP_LAYOUT = "lg:h-full lg:min-h-0 lg:self-stretch";
 const RIGHT_PANEL_COUNT_SUFFIX = "активно";
@@ -1224,24 +1224,24 @@ function StarMechanicListButton({ mechanic, isActive, onClick, tooltip }: StarMe
       aria-pressed={isActive}
       data-state={isActive ? "active" : "inactive"}
       data-testid={`star-mechanic-button-${mechanic.id}`}
-      className={`flex w-full items-center justify-between gap-3.5 rounded-[18px] border px-3.5 py-3.5 text-left transition ${
+      className={`inline-flex min-h-[2.75rem] items-center justify-between gap-2 rounded-full border px-3.5 py-2 text-left transition ${
         isActive
-          ? "border-[#39d98a]/56 bg-[linear-gradient(180deg,rgba(15,62,38,0.96),rgba(10,38,24,0.96))] text-white shadow-[0_0_0_1px_rgba(57,217,138,0.18),0_16px_42px_rgba(0,0,0,0.24)]"
-          : "border-white/8 bg-black/10 text-white/72 hover:border-white/14 hover:bg-white/7 hover:text-white"
+          ? "border-[#39d98a]/56 bg-[linear-gradient(180deg,rgba(15,62,38,0.96),rgba(10,38,24,0.96))] text-white shadow-[0_0_0_1px_rgba(57,217,138,0.18),0_12px_28px_rgba(0,0,0,0.18)]"
+          : "border-white/10 bg-black/18 text-white/72 hover:border-white/18 hover:bg-white/8 hover:text-white"
       }`}
     >
-      <div className="min-w-0 flex-1 pr-2">
-        <div className="text-[12px] font-medium leading-[1.3] sm:text-[12.5px]">{getMechanicButtonLabel(mechanic)}</div>
+      <div className="min-w-0">
+        <div className="text-[12px] font-medium leading-[1.2] sm:text-[12.5px]">{getMechanicButtonLabel(mechanic)}</div>
       </div>
       <span
-        className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${
+        className={`inline-flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border transition ${
           isActive ? "border-[#39d98a]/65 bg-[#39d98a] text-[#04120d]" : "border-white/12 bg-white/[0.03] text-transparent"
         }`}
         style={{
           boxShadow: isActive ? `0 0 18px ${mechanic.glow}` : "none",
         }}
       >
-        {isActive ? <Check className="h-3.5 w-3.5" /> : <span className="h-2.5 w-2.5 rounded-full" style={{ background: mechanic.stroke }} />}
+        {isActive ? <Check className="h-3 w-3" /> : <span className="h-2 w-2 rounded-full" style={{ background: mechanic.stroke }} />}
       </span>
     </button>
   );
@@ -1540,9 +1540,7 @@ export default function Star() {
     isStateLoading,
     isYasnaLibraryOpen,
     latestMechanic,
-    mechanicGroups,
     mechanics,
-    mechanicsById,
     oppositePointIndex,
     oppositePointLabel,
     oppositionMechanicActive,
@@ -1737,23 +1735,57 @@ export default function Star() {
         </div>
 
         <div className="relative z-[12] mt-4 rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,31,21,0.92),rgba(6,19,13,0.9))] px-3 py-2.5 shadow-[0_18px_50px_rgba(0,0,0,0.18)] backdrop-blur-xl sm:px-3.5">
-          <div className="flex flex-col gap-2.5 xl:flex-row xl:items-center xl:gap-3">
-            <div className="flex flex-wrap items-center gap-2 xl:shrink-0">
-              <Popover open={isYasnaLibraryOpen} onOpenChange={setIsYasnaLibraryOpen}>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-sm font-medium text-white transition hover:border-[#39d98a]/35 hover:bg-[#39d98a]/[0.1]"
-                  >
-                    <span>{yasnaLibraryPanelCopy.triggerLabel}</span>
-                    <ChevronsUpDown className="h-4 w-4 text-white/70" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="start"
-                  className="w-[min(92vw,360px)] rounded-[24px] border border-white/10 bg-[#071710]/95 p-2.5 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
+          <div className="flex flex-col gap-3">
+            <div className="rounded-[22px] border border-white/10 bg-black/16 px-3 py-3">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                <div className="space-y-1">
+                  <div className="text-[11px] uppercase tracking-[0.34em] text-[#8ab79f]">Механики</div>
+                  <p className="text-[12px] leading-5 text-white/54">
+                    Звезда остаётся пустой, пока вы не включите одну или несколько механик.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleAllMechanics}
+                  className={`inline-flex min-h-[2.75rem] shrink-0 items-center justify-center rounded-full border px-4 py-2 text-[12px] font-medium text-white transition ${
+                    allMechanicsSelected
+                      ? "border-white/14 bg-white/8 hover:border-white/24 hover:bg-white/12"
+                      : "border-[#39d98a]/25 bg-[#39d98a]/10 hover:border-[#39d98a]/55 hover:bg-[#39d98a]/16"
+                  }`}
                 >
-                  {selectedLibraryYasnas.length > 0 ? (
+                  {allMechanicsSelected ? "Сбросить все механики" : "Включить все механики"}
+                </button>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {mechanics.map((mechanic) => (
+                  <StarMechanicListButton
+                    key={mechanic.id}
+                    mechanic={mechanic}
+                    isActive={activeMechanicIds.includes(mechanic.id)}
+                    onClick={() => toggleMechanic(mechanic.id)}
+                    tooltip={getTooltipText(mechanic.alias, mechanic.description)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2.5 xl:flex-row xl:items-center xl:gap-3">
+              <div className="flex flex-wrap items-center gap-2 xl:shrink-0">
+                <Popover open={isYasnaLibraryOpen} onOpenChange={setIsYasnaLibraryOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 text-sm font-medium text-white transition hover:border-[#39d98a]/35 hover:bg-[#39d98a]/[0.1]"
+                    >
+                      <span>{yasnaLibraryPanelCopy.triggerLabel}</span>
+                      <ChevronsUpDown className="h-4 w-4 text-white/70" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    className="w-[min(92vw,360px)] rounded-[24px] border border-white/10 bg-[#071710]/95 p-2.5 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
+                  >
+                    {selectedLibraryYasnas.length > 0 ? (
                       <button
                         type="button"
                         onClick={() => setSelectedLibraryYasnaIds([])}
@@ -1763,126 +1795,83 @@ export default function Star() {
                       </button>
                     ) : null}
 
-                  <Command className="rounded-[20px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,30,20,0.92),rgba(5,18,12,0.94))] text-white [&_[cmdk-input-wrapper]]:border-white/10 [&_[cmdk-input-wrapper]]:px-2 [&_[cmdk-input-wrapper]_svg]:text-white/40 [&_[cmdk-input]]:h-10 [&_[cmdk-input]]:text-sm [&_[cmdk-input]]:text-white [&_[cmdk-input]]:placeholder:text-white/35">
-                    <CommandInput placeholder="Найти Ясну" />
-                    <CommandList className="max-h-[320px] px-1 pb-1">
-                      <CommandEmpty>Ничего не найдено.</CommandEmpty>
-                      <CommandGroup>
-                        {yasnas.map((yasna) => {
-                          const isSelected = selectedLibraryYasnaIds.includes(yasna.id);
-                          return (
-                            <CommandItem
-                              key={yasna.id}
-                              value={yasna.title}
-                              onSelect={() => toggleYasnaInLibrary(yasna.id)}
-                              className="mb-1 items-center gap-2 rounded-[16px] border border-transparent px-2.5 py-2 text-white/84 data-[selected=true]:border-[#39d98a]/28 data-[selected=true]:bg-[#39d98a]/[0.08] data-[selected=true]:text-white"
-                            >
-                              <span className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border ${isSelected ? "border-[#39d98a]/90 bg-[#39d98a] text-[#07110c]" : "border-white/18 bg-white/[0.04] text-transparent"}`}>
-                                <Check className="h-3 w-3" />
-                              </span>
-                              <div className="min-w-0 flex-1">
-                                <div className="truncate text-sm font-medium text-white">{yasna.title}</div>
-                              </div>
-                            </CommandItem>
-                          );
-                        })}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
+                    <Command className="rounded-[20px] border border-white/10 bg-[linear-gradient(180deg,rgba(10,30,20,0.92),rgba(5,18,12,0.94))] text-white [&_[cmdk-input-wrapper]]:border-white/10 [&_[cmdk-input-wrapper]]:px-2 [&_[cmdk-input-wrapper]_svg]:text-white/40 [&_[cmdk-input]]:h-10 [&_[cmdk-input]]:text-sm [&_[cmdk-input]]:text-white [&_[cmdk-input]]:placeholder:text-white/35">
+                      <CommandInput placeholder="Найти Ясну" />
+                      <CommandList className="max-h-[320px] px-1 pb-1">
+                        <CommandEmpty>Ничего не найдено.</CommandEmpty>
+                        <CommandGroup>
+                          {yasnas.map((yasna) => {
+                            const isSelected = selectedLibraryYasnaIds.includes(yasna.id);
+                            return (
+                              <CommandItem
+                                key={yasna.id}
+                                value={yasna.title}
+                                onSelect={() => toggleYasnaInLibrary(yasna.id)}
+                                className="mb-1 items-center gap-2 rounded-[16px] border border-transparent px-2.5 py-2 text-white/84 data-[selected=true]:border-[#39d98a]/28 data-[selected=true]:bg-[#39d98a]/[0.08] data-[selected=true]:text-white"
+                              >
+                                <span className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border ${isSelected ? "border-[#39d98a]/90 bg-[#39d98a] text-[#07110c]" : "border-white/18 bg-white/[0.04] text-transparent"}`}>
+                                  <Check className="h-3 w-3" />
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <div className="truncate text-sm font-medium text-white">{yasna.title}</div>
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-            <div className="min-w-0 flex-1">
-              {selectedLibraryYasnas.length > 0 ? (
-                <div className="yasna-scroll overflow-x-auto pb-0.5">
-                  <div className="flex min-w-max items-center gap-1.5">
-                    {selectedLibraryYasnas.map((yasna) => (
-                      <div
-                        key={yasna.id}
-                        className={`flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-1 transition ${
-                          yasna.isActive
-                            ? "border-[#39d98a]/82 bg-[#143523] text-white shadow-[0_0_0_1px_rgba(57,217,138,0.22),0_14px_34px_rgba(57,217,138,0.18)]"
-                            : "border-white/10 bg-white/[0.045] text-white/72 hover:border-white/18 hover:bg-white/[0.08] hover:text-white"
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => selectYasna(yasna.id)}
-                          title={getTooltipText(yasna.family, yasna.summary)}
-                          className="inline-flex items-center gap-1.5 rounded-full px-1.5 py-0.5 text-[13px]"
+              <div className="min-w-0 flex-1">
+                {selectedLibraryYasnas.length > 0 ? (
+                  <div className="yasna-scroll overflow-x-auto pb-0.5">
+                    <div className="flex min-w-max items-center gap-1.5">
+                      {selectedLibraryYasnas.map((yasna) => (
+                        <div
+                          key={yasna.id}
+                          className={`flex shrink-0 items-center gap-0.5 rounded-full border px-1.5 py-1 transition ${
+                            yasna.isActive
+                              ? "border-[#39d98a]/82 bg-[#143523] text-white shadow-[0_0_0_1px_rgba(57,217,138,0.22),0_14px_34px_rgba(57,217,138,0.18)]"
+                              : "border-white/10 bg-white/[0.045] text-white/72 hover:border-white/18 hover:bg-white/[0.08] hover:text-white"
+                          }`}
                         >
-                          <span
-                            className={`h-2 w-2 rounded-full ${yasna.isActive ? "bg-[#39d98a] shadow-[0_0_12px_rgba(57,217,138,0.72)]" : "bg-white/28"}`}
-                          />
-                          <span className="max-w-[190px] truncate">{yasna.title}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            removeYasnaFromLibraryRow(yasna.id);
-                          }}
-                          aria-label={`Убрать ${yasna.title} из строки выбранных Ясн`}
-                          className="inline-flex h-6.5 w-6.5 items-center justify-center rounded-full border border-transparent text-white/44 transition hover:border-white/12 hover:bg-white/[0.08] hover:text-white"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    ))}
+                          <button
+                            type="button"
+                            onClick={() => selectYasna(yasna.id)}
+                            title={getTooltipText(yasna.family, yasna.summary)}
+                            className="inline-flex items-center gap-1.5 rounded-full px-1.5 py-0.5 text-[13px]"
+                          >
+                            <span
+                              className={`h-2 w-2 rounded-full ${yasna.isActive ? "bg-[#39d98a] shadow-[0_0_12px_rgba(57,217,138,0.72)]" : "bg-white/28"}`}
+                            />
+                            <span className="max-w-[190px] truncate">{yasna.title}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              removeYasnaFromLibraryRow(yasna.id);
+                            }}
+                            aria-label={`Убрать ${yasna.title} из строки выбранных Ясн`}
+                            className="inline-flex h-6.5 w-6.5 items-center justify-center rounded-full border border-transparent text-white/44 transition hover:border-white/12 hover:bg-white/[0.08] hover:text-white"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : null}
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
 
         <div className={GRID_TEMPLATE}>
-          <aside className={`yasna-scroll flex min-h-0 flex-col overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.035] p-2.5 backdrop-blur-xl ${SIDE_COLUMN_DESKTOP_LAYOUT}`}>
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <div className="text-[11px] uppercase tracking-[0.34em] text-[#8ab79f]">Механики</div>
-            </div>
-
-            <div className="mb-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={toggleAllMechanics}
-                className={`inline-flex w-full min-h-[48px] items-center justify-center whitespace-nowrap rounded-[18px] border px-4 py-3.5 text-center text-[13px] font-medium leading-tight text-white transition ${
-                  allMechanicsSelected
-                    ? "border-white/14 bg-white/8 hover:border-white/24 hover:bg-white/12"
-                    : "border-[#39d98a]/25 bg-[#39d98a]/10 hover:border-[#39d98a]/55 hover:bg-[#39d98a]/16"
-                }`}
-              >
-                {allMechanicsSelected ? "Сброс" : "Все"}
-              </button>
-            </div>
-
-            <div className="min-h-0 flex-1 space-y-4 pb-1 pr-1">
-              {mechanicGroups.map((group) => (
-                <div key={group.title}>
-                  <div className="mb-2 text-[10px] uppercase tracking-[0.24em] text-white/42">{group.title}</div>
-                  <div className="space-y-2">
-                    {group.ids.map((mechanicId) => {
-                      const mechanic = mechanicsById[mechanicId];
-                      const isActive = activeMechanicIds.includes(mechanic.id);
-
-                      return (
-                        <StarMechanicListButton
-                          key={mechanic.id}
-                          mechanic={mechanic}
-                          isActive={isActive}
-                          onClick={() => toggleMechanic(mechanic.id)}
-                          tooltip={getTooltipText(mechanic.alias, mechanic.description)}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
-
-          <section className={`flex ${STAR_SCENE_MIN} ${CENTER_COLUMN_DESKTOP_LAYOUT} flex-col overflow-hidden rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.025))] p-1.5 shadow-[0_30px_80px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:p-2`}>
+          <section className={`flex w-full ${STAR_SCENE_MIN} ${CENTER_COLUMN_DESKTOP_LAYOUT} flex-col overflow-hidden rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.025))] p-1.5 shadow-[0_30px_80px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:p-2`}>
             <div className="mb-3">
               <div className="text-[11px] uppercase tracking-[0.34em] text-[#8ab79f]">Центральная звезда</div>
             </div>
