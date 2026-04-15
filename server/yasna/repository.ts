@@ -22,6 +22,13 @@ export type YasnaCatalogSnapshot = {
 
 let seedPromise: Promise<void> | null = null;
 
+export type YasnaAdminStatus = {
+  runtimeSource: "db" | "fallback";
+  yasnaCount: number;
+  mechanicCount: number;
+  defaultYasnaId: string;
+};
+
 function parseJsonArray<T>(value: string | null | undefined, fallback: T): T {
   if (!value) {
     return fallback;
@@ -219,6 +226,16 @@ async function seedYasnaTables() {
   });
 }
 
+async function requireDb() {
+  const db = await getDb();
+
+  if (!db) {
+    throw new Error("Database is unavailable");
+  }
+
+  return db;
+}
+
 async function ensureYasnaSeeded() {
   if (seedPromise) {
     await seedPromise;
@@ -324,4 +341,65 @@ export async function loadYasnaCatalogSnapshot(): Promise<YasnaCatalogSnapshot> 
     console.warn("[YasnaRepository] Failed to load DB snapshot, fallback will be used:", error);
     return getFallbackSnapshot();
   }
+}
+
+export async function syncYasnaCatalogToDatabase() {
+  await seedYasnaTables();
+  return loadYasnaCatalogSnapshot();
+}
+
+export async function getYasnaAdminStatus(): Promise<YasnaAdminStatus> {
+  const snapshot = await loadYasnaCatalogSnapshot();
+
+  return {
+    runtimeSource: snapshot.source,
+    yasnaCount: snapshot.yasnas.length,
+    mechanicCount: snapshot.mechanics.length,
+    defaultYasnaId: snapshot.defaultYasnaId,
+  };
+}
+
+export async function updateYasnaMetadata(input: {
+  id: string;
+  family: string;
+  title: string;
+  summary: string;
+}) {
+  const db = await requireDb();
+
+  await db
+    .update(yasnas)
+    .set({
+      family: input.family,
+      title: input.title,
+      summary: input.summary,
+      updatedAt: sql`now()`,
+    })
+    .where(eq(yasnas.id, input.id));
+
+  return loadYasnaCatalogSnapshot();
+}
+
+export async function upsertYasnaPointText(input: {
+  yasnaId: string;
+  pointIndex: number;
+  rawText: string;
+}) {
+  const db = await requireDb();
+  const normalizedText = input.rawText.trim();
+
+  await db
+    .insert(yasnaPoints)
+    .values({
+      yasnaId: input.yasnaId,
+      pointIndex: input.pointIndex,
+      rawText: normalizedText,
+    })
+    .onDuplicateKeyUpdate({
+      set: {
+        rawText: normalizedText,
+      },
+    });
+
+  return loadYasnaCatalogSnapshot();
 }
