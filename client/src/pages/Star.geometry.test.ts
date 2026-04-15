@@ -35,7 +35,7 @@ describe("Star geometry regressions", () => {
     });
   });
 
-  it("uses a wider two-column desktop grid after removing the right inspector", () => {
+  it("uses a single full-width star scene after moving mechanics into the header", () => {
     const layout = getStarLayoutClasses();
 
     expect(layout.containerMax).toContain("min(78svh,1120px)");
@@ -44,10 +44,7 @@ describe("Star geometry regressions", () => {
     expect(layout.sceneInnerMin).toContain("68svh");
     expect(layout.sceneInnerMin).toContain("sm:min-h-[900px]");
     expect(layout.scenePadding).toContain("px-1.5");
-    expect(layout.gridTemplate).toContain("lg:max-h-[calc(100vh-9.5rem)]");
-    expect(layout.gridTemplate).toContain("108px_minmax(0,1fr)");
-    expect(layout.gridTemplate).toContain("116px_minmax(0,1fr)");
-    expect(layout.gridTemplate).toContain("124px_minmax(0,1fr)");
+    expect(layout.gridTemplate).toBe("mt-4 flex min-h-0 flex-1");
     expect(layout.sideColumnDesktopLayout).toContain("lg:max-h-full");
     expect(layout.sideColumnDesktopLayout).toContain("lg:self-stretch");
     expect(layout.centerColumnDesktopLayout).toContain("lg:self-stretch");
@@ -68,12 +65,10 @@ describe("Star geometry regressions", () => {
     expect(layout.sceneInnerMin).not.toContain("2xl:min-h");
   });
 
-  it("keeps the desktop scene bounded by viewport-height rules on reduced desktop windows", () => {
+  it("keeps the desktop scene bounded while the wrapper stays single-column", () => {
     const layout = getStarLayoutClasses();
 
-    expect(layout.gridTemplate).toContain("lg:h-[calc(100vh-9.5rem)]");
-    expect(layout.gridTemplate).toContain("lg:max-h-[calc(100vh-9.5rem)]");
-    expect(layout.gridTemplate).toContain("lg:min-h-0");
+    expect(layout.gridTemplate).toBe("mt-4 flex min-h-0 flex-1");
   });
 
   it("makes key line mechanics visually stronger than generic connectors", () => {

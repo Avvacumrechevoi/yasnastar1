@@ -61,6 +61,8 @@ test.describe("Yasna UI smoke", () => {
     await expect(page.getByTestId("star-scene")).toBeVisible();
     await expect(page.getByTestId("star-point-label-6")).toBeVisible();
     await expect(page.getByTestId("star-mechanic-button-prana-water")).toBeVisible();
+    await expect(page.locator('[data-testid^="star-mechanic-button-"][data-state="active"]')).toHaveCount(0);
+    await expect(page.getByTestId("star-selection-overlay")).toBeHidden();
 
     await page.getByTestId("star-point-label-6").click();
     await page.getByTestId("star-mechanic-button-prana-water").click();

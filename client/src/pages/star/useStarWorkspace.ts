@@ -98,7 +98,8 @@ export function useStarWorkspace() {
     () => activeMechanicIds.map((mechanicId) => mechanicsById[mechanicId]).filter((mechanic): mechanic is Mechanic => Boolean(mechanic)),
     [activeMechanicIds, mechanicsById],
   );
-  const displayMechanics = activeMechanicIds.length > 0 ? optimisticActiveMechanics : activeMechanics;
+  // The central star should stay neutral until the user explicitly enables mechanics.
+  const displayMechanics = optimisticActiveMechanics;
   const allMechanicsSelected = areAllMechanicsSelected(activeMechanicIds, allMechanicIds);
   const selectedPointView = computedState?.selectedPoint ?? null;
   const oppositePointView = computedState?.oppositePoint ?? null;
@@ -110,8 +111,8 @@ export function useStarWorkspace() {
   const oppositePointIndex = oppositePointView?.index ?? null;
   const oppositePointLabel = oppositePointView?.label ?? "Полочка не выбрана";
   const highlightedPoints = useMemo(
-    () => new Set(computedState?.highlightedPointIndices ?? []),
-    [computedState?.highlightedPointIndices],
+    () => new Set(activeMechanicIds.length > 0 ? computedState?.highlightedPointIndices ?? [] : []),
+    [activeMechanicIds.length, computedState?.highlightedPointIndices],
   );
   const selectedLibraryYasnas = useMemo(
     () => buildYasnaLibraryRow({
@@ -236,9 +237,9 @@ export function useStarWorkspace() {
     setSelectedLibraryYasnaIds((current) => removeYasnaLibrarySelection(current, id));
   };
 
-  const contextMechanics = computedState?.inspector.activeMechanics?.length
-    ? computedState.inspector.activeMechanics
-    : displayMechanics;
+  const contextMechanics = activeMechanicIds.length > 0
+    ? (computedState?.inspector.activeMechanics?.length ? computedState.inspector.activeMechanics : displayMechanics)
+    : [];
   const contextPanelModel = buildContextPanelModel({
     yasna: activeYasna
       ? {
