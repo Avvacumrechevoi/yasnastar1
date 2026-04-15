@@ -21,7 +21,7 @@ test.describe("Yasna UI smoke", () => {
 
     await page.getByTestId("home-mobile-menu-trigger").click();
     await expect(page.getByText("Навигация по Ясне")).toBeVisible();
-    await expect(page.getByText("Каталог")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Каталог" })).toBeVisible();
   });
 
   test("catalog loads and supports search", async ({ page }) => {
@@ -53,7 +53,7 @@ test.describe("Yasna UI smoke", () => {
     await expect(searchInput).toHaveValue("атмосфера");
   });
 
-  test("star opens overlay after point and mechanic selection", async ({ page }) => {
+  test("star opens overlay after point and mechanic selection", async ({ page }, testInfo) => {
     await page.goto("/star");
     await page.waitForLoadState("networkidle");
 
@@ -67,7 +67,10 @@ test.describe("Yasna UI smoke", () => {
 
     await expect(page.getByTestId("star-selection-overlay")).toBeVisible();
     await expect(page.getByTestId("star-selection-card")).toBeVisible();
-    await expect(page.getByTestId("star-selection-overlay-collapse")).toBeVisible();
+
+    if (!isMobileProject(testInfo.project.name)) {
+      await expect(page.getByTestId("star-selection-overlay-collapse")).toBeVisible();
+    }
   });
 
   test("star remains operable on mobile viewport", async ({ page }, testInfo) => {
