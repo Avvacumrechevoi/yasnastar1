@@ -17,7 +17,7 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   webServer: {
-    command: "pnpm vite --host 127.0.0.1 --port 4173",
+    command: "PORT=4173 pnpm dev",
     port: 4173,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

@@ -7,7 +7,7 @@ test.describe("Yasna UI smoke", () => {
     await expect(page.getByTestId("home-hero")).toBeVisible();
     await expect(page.getByTestId("home-open-star")).toBeVisible();
     await expect(page.getByTestId("home-open-catalog")).toBeVisible();
-    await expect(page.getByText("Открыть звезду механик")).toBeVisible();
+    await expect(page.getByTestId("home-module-grid")).toBeVisible();
   });
 
   test("catalog loads and supports search", async ({ page }) => {
@@ -21,6 +21,7 @@ test.describe("Yasna UI smoke", () => {
     const cards = page.locator('[data-testid^="yasna-card-"]');
     const errorHeading = page.getByRole("heading", { name: "Каталог временно недоступен" });
     const emptyHeading = page.getByRole("heading", { name: "Измените фильтры или поисковый запрос" });
+    await page.waitForLoadState("networkidle");
 
     if (await errorHeading.isVisible()) {
       await expect(errorHeading).toBeVisible();
@@ -35,16 +36,17 @@ test.describe("Yasna UI smoke", () => {
     await expect(cards.first()).toBeVisible();
 
     await searchInput.fill("атмосфера");
-    if (!(await errorHeading.isVisible())) {
-      await expect(searchInput).toHaveValue("атмосфера");
-    }
+    await expect(searchInput).toHaveValue("атмосфера");
   });
 
   test("star opens overlay after point and mechanic selection", async ({ page }) => {
     await page.goto("/star");
+    await page.waitForLoadState("networkidle");
 
-    await expect(page.getByRole("link", { name: "Вернуться на главную" })).toBeVisible();
+    await expect(page.getByTestId("star-page")).toBeVisible();
+    await expect(page.getByTestId("star-scene")).toBeVisible();
     await expect(page.getByTestId("star-point-label-6")).toBeVisible();
+    await expect(page.getByTestId("star-mechanic-button-prana-water")).toBeVisible();
 
     await page.getByTestId("star-point-label-6").click();
     await page.getByTestId("star-mechanic-button-prana-water").click();

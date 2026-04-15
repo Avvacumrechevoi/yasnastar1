@@ -249,7 +249,7 @@ function Home() {
               </div>
 
               <div className="mt-10 w-full max-w-[1120px]">
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" data-testid="home-module-grid">
                   {productFigures.map(item => (
                     <Dialog key={item.title}>
                       <DialogTrigger asChild>

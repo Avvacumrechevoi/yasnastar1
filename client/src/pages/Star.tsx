@@ -1223,6 +1223,7 @@ function StarMechanicListButton({ mechanic, isActive, onClick, tooltip }: StarMe
       title={tooltip}
       aria-pressed={isActive}
       data-state={isActive ? "active" : "inactive"}
+      data-testid={`star-mechanic-button-${mechanic.id}`}
       className={`flex w-full items-center justify-between gap-3.5 rounded-[18px] border px-3.5 py-3.5 text-left transition ${
         isActive
           ? "border-[#39d98a]/56 bg-[linear-gradient(180deg,rgba(15,62,38,0.96),rgba(10,38,24,0.96))] text-white shadow-[0_0_0_1px_rgba(57,217,138,0.18),0_16px_42px_rgba(0,0,0,0.24)]"
@@ -1716,7 +1717,7 @@ export default function Star() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#04120d] text-white lg:h-screen">
+    <div className="relative min-h-screen overflow-hidden bg-[#04120d] text-white lg:h-screen" data-testid="star-page">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(22,71,48,0.58),transparent_42%),linear-gradient(180deg,#05150f_0%,#04100c_46%,#030a08_100%)]" />
         <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(88,140,111,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(88,140,111,0.08)_1px,transparent_1px)] [background-size:140px_140px]" />
@@ -1885,7 +1886,10 @@ export default function Star() {
             <div className="mb-3">
               <div className="text-[11px] uppercase tracking-[0.34em] text-[#8ab79f]">Центральная звезда</div>
             </div>
-              <div className={`relative flex ${STAR_SCENE_INNER_MIN} flex-1 items-center justify-center overflow-visible rounded-[30px] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(68,131,96,0.2),transparent_28%),radial-gradient(circle_at_center,rgba(57,217,138,0.09),transparent_34%),linear-gradient(180deg,rgba(4,22,15,0.82),rgba(3,11,8,0.96))] ${STAR_SCENE_PADDING} lg:min-h-0`}>
+              <div
+                className={`relative flex ${STAR_SCENE_INNER_MIN} flex-1 items-center justify-center overflow-visible rounded-[30px] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(68,131,96,0.2),transparent_28%),radial-gradient(circle_at_center,rgba(57,217,138,0.09),transparent_34%),linear-gradient(180deg,rgba(4,22,15,0.82),rgba(3,11,8,0.96))] ${STAR_SCENE_PADDING} lg:min-h-0`}
+                data-testid="star-scene"
+              >
 
               <div className="pointer-events-none absolute inset-0 opacity-35 [background-image:radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_80%_8%,rgba(255,255,255,0.06),transparent_20%),repeating-radial-gradient(circle_at_center,rgba(118,170,140,0.06)_0_1px,transparent_1px_44px)]" />
               <div className="pointer-events-none absolute inset-x-[12%] top-[11%] h-[28%] rounded-full bg-[#39d98a]/[0.08] blur-3xl" />
