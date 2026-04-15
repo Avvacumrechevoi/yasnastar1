@@ -10,11 +10,14 @@ import {
 } from "./catalog";
 import { loadYasnaCatalogSnapshot } from "./repository";
 
+const RUNTIME_CATALOG_TTL_MS = 5 * 60 * 1000;
+
 let runtimeDefaultYasnaId = DEFAULT_YASNA_ID;
 let runtimeYasnas: YasnaRecord[] = cloneYasnas(YASNA_DATA);
 let runtimeMechanics: Mechanic[] = cloneMechanics(MECHANICS);
 let runtimeMechanicGroups: MechanicGroup[] = cloneMechanicGroups(MECHANIC_GROUPS);
 let refreshPromise: Promise<void> | null = null;
+let lastRefreshAt = 0;
 
 function cloneLessons(lessons: YasnaLesson[]) {
   return lessons.map(lesson => ({
@@ -51,7 +54,13 @@ function replaceArray<T>(target: T[], next: T[]) {
   target.splice(0, target.length, ...next);
 }
 
-export async function refreshYasnaRuntimeCatalog() {
+export async function refreshYasnaRuntimeCatalog(options?: { force?: boolean }) {
+  const shouldUseCache = !options?.force;
+
+  if (shouldUseCache && lastRefreshAt > 0 && Date.now() - lastRefreshAt < RUNTIME_CATALOG_TTL_MS) {
+    return;
+  }
+
   if (refreshPromise) {
     await refreshPromise;
     return;
@@ -63,6 +72,7 @@ export async function refreshYasnaRuntimeCatalog() {
     replaceArray(runtimeYasnas, cloneYasnas(snapshot.yasnas));
     replaceArray(runtimeMechanics, cloneMechanics(snapshot.mechanics));
     replaceArray(runtimeMechanicGroups, cloneMechanicGroups(snapshot.mechanicGroups));
+    lastRefreshAt = Date.now();
   })();
 
   refreshPromise = currentPromise;
@@ -74,6 +84,10 @@ export async function refreshYasnaRuntimeCatalog() {
       refreshPromise = null;
     }
   }
+}
+
+export function getRuntimeCatalogLastRefreshAt() {
+  return lastRefreshAt;
 }
 
 export function getRuntimeDefaultYasnaId() {

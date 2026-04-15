@@ -20,7 +20,9 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
-});
+}, table => ({
+  emailIdx: index("users_email_idx").on(table.email),
+}));
 
 export const yasnas = mysqlTable(
   "yasnas",
@@ -75,6 +77,7 @@ export const yasnaLessons = mysqlTable(
   table => ({
     yasnaIdx: index("yasna_lessons_yasna_idx").on(table.yasnaId),
     sortIdx: index("yasna_lessons_sort_idx").on(table.sortOrder),
+    yasnaSortIdx: index("yasna_lessons_yasna_sort_idx").on(table.yasnaId, table.sortOrder),
   }),
 );
 
@@ -91,6 +94,7 @@ export const yasnaNotes = mysqlTable(
   table => ({
     yasnaIdx: index("yasna_notes_yasna_idx").on(table.yasnaId),
     sortIdx: index("yasna_notes_sort_idx").on(table.sortOrder),
+    yasnaSortIdx: index("yasna_notes_yasna_sort_idx").on(table.yasnaId, table.sortOrder),
   }),
 );
 

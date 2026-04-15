@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, LibraryBig, Orbit, Search, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowLeft, LibraryBig, Orbit, Search, Sparkles } from "lucide-react";
 
 import { trpc } from "@/lib/trpc";
 import { STATIC_PREVIEW_MODE, useStaticCatalogData } from "./star/staticPreview";
@@ -20,6 +20,7 @@ function YasnasPage() {
   const yasnaCatalog = catalogData?.yasnas ?? [];
   const yasnaTypes = useMemo(() => ["Все типы", ...Array.from(new Set(yasnaCatalog.map(item => item.family)))], [yasnaCatalog]);
   const [activeType, setActiveType] = useState<string>("Все типы");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (!yasnaTypes.includes(activeType)) {
@@ -28,15 +29,27 @@ function YasnasPage() {
   }, [activeType, yasnaTypes]);
 
   const filteredItems = useMemo(() => {
-    if (activeType === "Все типы") {
-      return yasnaCatalog;
-    }
+    const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    return yasnaCatalog.filter(item => item.family === activeType);
-  }, [activeType, yasnaCatalog]);
+    return yasnaCatalog.filter(item => {
+      const matchesType = activeType === "Все типы" ? true : item.family === activeType;
+      const matchesSearch =
+        normalizedQuery.length === 0
+          ? true
+          : [item.title, item.summary, item.family, item.contextAccent, ...item.mechanics]
+              .join(" ")
+              .toLowerCase()
+              .includes(normalizedQuery);
+
+      return matchesType && matchesSearch;
+    });
+  }, [activeType, searchQuery, yasnaCatalog]);
+
+  const isLoading = !STATIC_PREVIEW_MODE && catalogQuery.isLoading;
+  const isError = !STATIC_PREVIEW_MODE && catalogQuery.isError;
 
   return (
-    <main className="min-h-screen bg-[#040404] text-white">
+    <main className="min-h-screen bg-[#040404] text-white" data-testid="yasnas-page">
       <div className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,226,125,0.14),transparent_22%),radial-gradient(circle_at_90%_10%,rgba(255,255,255,0.06),transparent_18%)]" />
         <div className="yasna-grid pointer-events-none absolute inset-0 opacity-30" />
@@ -112,11 +125,11 @@ function YasnasPage() {
                       </p>
                     </div>
                     <div className="rounded-full border border-[#38e27d]/25 bg-[#38e27d]/10 p-3 text-[#38e27d]">
-                      <Search className="h-5 w-5" />
+                      <Orbit className="h-5 w-5" />
                     </div>
                   </div>
                   <p className="mt-4 text-sm leading-6 text-white/60">
-                    Фильтр работает без перезагрузки и сразу пересобирает библиотеку под выбранный тип Ясны.
+                    Каталог пересобирается сразу по типу и поисковому запросу, без перезагрузки страницы.
                   </p>
                 </article>
 
@@ -142,26 +155,30 @@ function YasnasPage() {
             </div>
 
             <div className="mt-10 rounded-[30px] border border-white/10 bg-white/[0.03] p-4 sm:p-5">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="max-w-[32rem]">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#38e27d]">
                     Фильтрация каталога
                   </p>
                   <p className="mt-2 text-sm leading-6 text-white/58">
-                    Выберите тип, чтобы перестроить сетку карточек и увидеть только релевантные Ясны.
+                    Выберите тип и при необходимости введите часть названия, семейства или механики, чтобы быстро сузить библиотеку.
                   </p>
                 </div>
 
-                {activeType !== "Все типы" ? (
-                  <button
-                    type="button"
-                    onClick={() => setActiveType("Все типы")}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-black/30 px-4 py-2 text-sm font-medium text-white/78 transition hover:border-white/25 hover:text-white"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Сбросить фильтр
-                  </button>
-                ) : null}
+                <div
+                  className="flex w-full max-w-[26rem] items-center gap-3 rounded-[22px] border border-white/10 bg-black/25 px-4 py-3"
+                  data-testid="yasnas-search"
+                >
+                  <Search className="h-4 w-4 shrink-0 text-white/42" />
+                  <input
+                    type="search"
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    placeholder="Поиск по названию, семейству или механике"
+                    className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/35"
+                    data-testid="yasnas-search-input"
+                  />
+                </div>
               </div>
 
               <div className="mt-5 flex flex-wrap gap-3">
@@ -178,90 +195,159 @@ function YasnasPage() {
                           ? "border-[#38e27d]/45 bg-[#38e27d]/12 text-white shadow-[0_0_30px_rgba(56,226,125,0.14)]"
                           : "border-white/10 bg-white/[0.03] text-white/68 hover:border-white/22 hover:bg-white/[0.05] hover:text-white"
                       }`}
+                      data-testid={`yasnas-filter-${type}`}
                     >
                       {type}
                     </button>
                   );
                 })}
               </div>
+
+              {activeType !== "Все типы" || searchQuery.trim().length > 0 ? (
+                <div className="mt-5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveType("Все типы");
+                      setSearchQuery("");
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-black/30 px-4 py-2 text-sm font-medium text-white/78 transition hover:border-white/25 hover:text-white"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Сбросить фильтры
+                  </button>
+                </div>
+              ) : null}
             </div>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredItems.map(item => (
-                <article
-                  key={item.id}
-                  className="group rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.02)_100%)] p-5 shadow-[0_18px_64px_rgba(0,0,0,0.24)] transition duration-300 hover:-translate-y-1 hover:border-[#38e27d]/30 hover:shadow-[0_24px_90px_rgba(0,0,0,0.34)]"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#38e27d]">
-                        {item.family}
-                      </p>
-                      <h2 className="mt-3 text-[1.45rem] font-semibold leading-tight tracking-[-0.05em] text-white">
-                        {item.title}
-                      </h2>
+            {isError ? (
+              <div className="mt-8 rounded-[30px] border border-rose-500/20 bg-rose-500/[0.08] p-6 text-white">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full border border-rose-400/25 bg-rose-400/10 p-3 text-rose-200">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold tracking-[-0.04em] text-white">
+                      Каталог временно недоступен
+                    </h2>
+                    <p className="mt-2 max-w-[42rem] text-sm leading-6 text-white/74">
+                      Не удалось получить данные с сервера. Проверьте API или базу данных: библиотека Ясн должна возвращать каталог без ошибок и с предсказуемыми состояниями загрузки.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : isLoading ? (
+              <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <div
+                    key={`yasna-skeleton-${index}`}
+                    className="rounded-[30px] border border-white/10 bg-white/[0.03] p-5 shadow-[0_18px_64px_rgba(0,0,0,0.18)]"
+                  >
+                    <div className="h-3 w-28 rounded-full bg-white/10" />
+                    <div className="mt-4 h-8 w-2/3 rounded-full bg-white/10" />
+                    <div className="mt-4 space-y-2">
+                      <div className="h-3 rounded-full bg-white/8" />
+                      <div className="h-3 rounded-full bg-white/8" />
+                      <div className="h-3 w-4/5 rounded-full bg-white/8" />
                     </div>
-                    <div className="rounded-full border border-white/10 bg-black/30 p-3 text-white/56 transition group-hover:border-[#38e27d]/25 group-hover:text-[#38e27d]">
-                      <Orbit className="h-5 w-5" />
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                      <div className="h-20 rounded-[20px] bg-white/8" />
+                      <div className="h-20 rounded-[20px] bg-white/8" />
                     </div>
                   </div>
+                ))}
+              </div>
+            ) : filteredItems.length === 0 ? (
+              <div className="mt-8 rounded-[30px] border border-white/10 bg-white/[0.03] p-6 text-center">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#38e27d]">
+                  Ничего не найдено
+                </p>
+                <h2 className="mt-3 text-[1.7rem] font-semibold tracking-[-0.05em] text-white">
+                  Измените фильтры или поисковый запрос
+                </h2>
+                <p className="mx-auto mt-3 max-w-[34rem] text-sm leading-6 text-white/62">
+                  В текущем наборе Ясн нет совпадений по выбранному типу или тексту запроса. Сбросьте фильтры, чтобы вернуться ко всему каталогу.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3" data-testid="yasnas-grid">
+                {filteredItems.map(item => (
+                  <article
+                    key={item.id}
+                    className="group rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.02)_100%)] p-5 shadow-[0_18px_64px_rgba(0,0,0,0.24)] transition duration-300 hover:-translate-y-1 hover:border-[#38e27d]/30 hover:shadow-[0_24px_90px_rgba(0,0,0,0.34)]"
+                    data-testid={`yasna-card-${item.id}`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#38e27d]">
+                          {item.family}
+                        </p>
+                        <h2 className="mt-3 text-[1.45rem] font-semibold leading-tight tracking-[-0.05em] text-white">
+                          {item.title}
+                        </h2>
+                      </div>
+                      <div className="rounded-full border border-white/10 bg-black/30 p-3 text-white/56 transition group-hover:border-[#38e27d]/25 group-hover:text-[#38e27d]">
+                        <Orbit className="h-5 w-5" />
+                      </div>
+                    </div>
 
-                  <p className="mt-4 text-sm leading-7 text-white/62">{item.summary}</p>
+                    <p className="mt-4 text-sm leading-7 text-white/62">{item.summary}</p>
 
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-[20px] border border-white/10 bg-black/25 px-4 py-3">
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-[20px] border border-white/10 bg-black/25 px-4 py-3">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-white/42">
+                          Уроков в модели
+                        </p>
+                        <p className="mt-2 text-lg font-semibold tracking-[-0.04em] text-white">
+                          {item.lessonCount}
+                        </p>
+                      </div>
+                      <div className="rounded-[20px] border border-[#38e27d]/18 bg-[#38e27d]/[0.06] px-4 py-3">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#38e27d]">
+                          Контекстный акцент
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-white/72">{item.contextAccent}</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 rounded-[22px] border border-white/10 bg-black/20 px-4 py-4">
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-white/42">
-                        Уроков в модели
+                        Первые полочки
                       </p>
-                      <p className="mt-2 text-lg font-semibold tracking-[-0.04em] text-white">
-                        {item.lessonCount}
-                      </p>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        {item.pointsPreview.map(point => (
+                          <div
+                            key={`${item.id}-${point.index}`}
+                            className="rounded-[16px] border border-white/10 bg-white/[0.03] px-3 py-2.5"
+                          >
+                            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#38e27d]">
+                              {point.index}
+                            </p>
+                            <p className="mt-1 text-sm leading-5 text-white/74">{point.label}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="rounded-[20px] border border-[#38e27d]/18 bg-[#38e27d]/[0.06] px-4 py-3">
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#38e27d]">
-                        Контекстный акцент
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-white/72">{item.contextAccent}</p>
-                    </div>
-                  </div>
 
-                  <div className="mt-6 rounded-[22px] border border-white/10 bg-black/20 px-4 py-4">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-white/42">
-                      Первые полочки
-                    </p>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                      {item.pointsPreview.map(point => (
-                        <div
-                          key={`${item.id}-${point.index}`}
-                          className="rounded-[16px] border border-white/10 bg-white/[0.03] px-3 py-2.5"
-                        >
-                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#38e27d]">
-                            {point.index}
-                          </p>
-                          <p className="mt-1 text-sm leading-5 text-white/74">{point.label}</p>
-                        </div>
-                      ))}
+                    <div className="mt-6 border-t border-white/10 pt-5">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-white/42">
+                        Активные механики
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {item.mechanics.map(mechanic => (
+                          <span
+                            key={mechanic}
+                            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-white/72"
+                          >
+                            {mechanic}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="mt-6 border-t border-white/10 pt-5">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-white/42">
-                      Активные механики
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {item.mechanics.map(mechanic => (
-                        <span
-                          key={mechanic}
-                          className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-white/72"
-                        >
-                          {mechanic}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </div>

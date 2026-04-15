@@ -271,9 +271,9 @@ const YASNA_CARD_TITLE = "mt-2 text-[15px] leading-5 text-white";
 const PANEL_LIST_TEXT = "mt-3 text-[13px] leading-5 text-white/58";
 const ACTIVE_MECHANIC_COUNTER = "rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] text-white/54";
 const MECHANIC_LAST_TEXT = "Последним включением считается последний выбранный пункт из левой колонки.";
-const STAR_CONTAINER_MAX = "h-full w-auto max-h-[1120px] max-w-full";
-const STAR_SCENE_MIN = "min-h-[920px]";
-const STAR_SCENE_INNER_MIN = "min-h-[900px]";
+const STAR_CONTAINER_MAX = "h-full w-full max-h-[min(78svh,1120px)] max-w-full lg:w-auto lg:max-h-[1120px]";
+const STAR_SCENE_MIN = "min-h-[72svh] sm:min-h-[920px]";
+const STAR_SCENE_INNER_MIN = "min-h-[68svh] sm:min-h-[900px]";
 const STAR_SCENE_PADDING = "px-1.5 py-1.5 sm:px-2.5 sm:py-2.5";
 const GRID_TEMPLATE = "mt-4 grid min-h-0 flex-1 grid-cols-1 gap-2 lg:h-[calc(100vh-9.5rem)] lg:max-h-[calc(100vh-9.5rem)] lg:min-h-0 lg:grid-cols-[108px_minmax(0,1fr)] lg:items-stretch lg:overflow-hidden xl:grid-cols-[116px_minmax(0,1fr)] 2xl:grid-cols-[124px_minmax(0,1fr)]";
 const SIDE_COLUMN_DESKTOP_LAYOUT = "lg:h-full lg:max-h-full lg:self-stretch lg:overflow-y-auto lg:overscroll-contain";
@@ -318,6 +318,9 @@ const OPPOSITION_DISABLED_TEXT = "Для построения пары нужн�
 const PANEL_TITLE_LINE_CLASS = "mt-2 text-[15px] leading-5 text-white";
 const PANEL_BODY_LINE_CLASS = "mt-2.5 text-[13px] leading-5 text-white/72";
 const PANEL_ITEM_BODY_CLASS = "mt-1.5 text-[12px] leading-5 text-white/72";
+const DESKTOP_OVERLAY_OFFSET = 20;
+const DESKTOP_OVERLAY_MIN_WIDTH = 360;
+const DESKTOP_OVERLAY_MIN_HEIGHT = 280;
 function polarPoint(index: number, radius: number): Point {
   const angle = ((90 + index * 30) * Math.PI) / 180;
 
@@ -477,6 +480,7 @@ function StarPointLabelOverlay({
       type="button"
       onClick={onSelect}
       title={tooltip || `${POINT_TOOLTIP_FALLBACK} ${pointIndex}`}
+      data-testid={`star-point-label-${pointIndex}`}
       className={`absolute z-[3] flex font-semibold tracking-[0.01em] transition ${
         isSelected
           ? "text-white"
@@ -750,6 +754,93 @@ function getPointLabelLayout(point: Point, text?: string | null): LabelLayout {
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
+}
+
+function getOverlayBounds(container: HTMLDivElement | null) {
+  if (!container) {
+    return {
+      width: typeof window === "undefined" ? 0 : window.innerWidth,
+      height: typeof window === "undefined" ? 0 : window.innerHeight,
+    };
+  }
+
+  return {
+    width: container.clientWidth,
+    height: container.clientHeight,
+  };
+}
+
+function clampOverlaySize(
+  size: { width: number; height: number },
+  container: HTMLDivElement | null,
+) {
+  const bounds = getOverlayBounds(container);
+  const maxWidth = Math.max(300, bounds.width - DESKTOP_OVERLAY_OFFSET * 2);
+  const maxHeight = Math.max(220, bounds.height - DESKTOP_OVERLAY_OFFSET * 2);
+
+  return {
+    width: clamp(size.width, Math.min(DESKTOP_OVERLAY_MIN_WIDTH, maxWidth), maxWidth),
+    height: clamp(size.height, Math.min(DESKTOP_OVERLAY_MIN_HEIGHT, maxHeight), maxHeight),
+  };
+}
+
+function clampOverlayPosition(
+  position: { x: number; y: number },
+  size: { width: number; height: number },
+  container: HTMLDivElement | null,
+) {
+  const bounds = getOverlayBounds(container);
+
+  return {
+    x: clamp(position.x, 0, Math.max(0, bounds.width - size.width - DESKTOP_OVERLAY_OFFSET)),
+    y: clamp(position.y, 0, Math.max(0, bounds.height - size.height - DESKTOP_OVERLAY_OFFSET)),
+  };
+}
+
+function usePrefersReducedMotion() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setPrefersReducedMotion(mediaQuery.matches);
+
+    update();
+    mediaQuery.addEventListener?.("change", update);
+
+    return () => {
+      mediaQuery.removeEventListener?.("change", update);
+    };
+  }, []);
+
+  return prefersReducedMotion;
+}
+
+function StrokeDashAnimation({
+  from,
+  duration,
+  disabled,
+}: {
+  from: number;
+  duration: string;
+  disabled: boolean;
+}) {
+  if (disabled) {
+    return null;
+  }
+
+  return (
+    <animate
+      attributeName="stroke-dashoffset"
+      from={String(from)}
+      to="0"
+      dur={duration}
+      repeatCount="indefinite"
+    />
+  );
 }
 
 function getRectAxisGap(value: number, start: number, size: number) {
@@ -1132,6 +1223,7 @@ function StarMechanicListButton({ mechanic, isActive, onClick, tooltip }: StarMe
       title={tooltip}
       aria-pressed={isActive}
       data-state={isActive ? "active" : "inactive"}
+      data-testid={`star-mechanic-button-${mechanic.id}`}
       className={`flex w-full items-center justify-between gap-3.5 rounded-[18px] border px-3.5 py-3.5 text-left transition ${
         isActive
           ? "border-[#39d98a]/56 bg-[linear-gradient(180deg,rgba(15,62,38,0.96),rgba(10,38,24,0.96))] text-white shadow-[0_0_0_1px_rgba(57,217,138,0.18),0_16px_42px_rgba(0,0,0,0.24)]"
@@ -1223,9 +1315,10 @@ type StarContrastOverlayProps = {
   mechanic: Pick<Mechanic, "id" | "title" | "stroke" | "kind">;
   selectedPoint: number | null;
   starPoints: Point[];
+  disableMotion?: boolean;
 };
 
-function StarContrastOverlay({ mechanic, selectedPoint, starPoints }: StarContrastOverlayProps) {
+function StarContrastOverlay({ mechanic, selectedPoint, starPoints, disableMotion = false }: StarContrastOverlayProps) {
   if (selectedPoint === null) {
     return null;
   }
@@ -1268,7 +1361,11 @@ function StarContrastOverlay({ mechanic, selectedPoint, starPoints }: StarContra
         strokeDasharray={visualStyle.dashArray}
         filter="url(#star-glow)"
       >
-        <animate attributeName="stroke-dashoffset" from={String(visualStyle.dashOffsetFrom)} to="0" dur={visualStyle.animationDuration} repeatCount="indefinite" />
+        <StrokeDashAnimation
+          from={visualStyle.dashOffsetFrom}
+          duration={visualStyle.animationDuration}
+          disabled={disableMotion}
+        />
       </line>
       <g transform={`translate(${badgePosition.x}, ${badgePosition.y - 22})`}>
         <rect x={-74} y={-15} width="148" height="30" rx="15" fill="rgba(4,18,13,0.9)" stroke={mechanic.stroke} strokeWidth="1.1" />
@@ -1476,9 +1573,11 @@ export default function Star() {
 
   const starPoints = useMemo(() => Array.from({ length: 12 }, (_, index) => polarPoint(index, POINT_RADIUS)), []);
   const ringPoints = useMemo(() => Array.from({ length: 12 }, (_, index) => polarPoint(index, GRID_RADIUS)), []);
+  const prefersReducedMotion = usePrefersReducedMotion();
   const [isOverlayCollapsed, setIsOverlayCollapsed] = useState(false);
   const [overlayDesktopPosition, setOverlayDesktopPosition] = useState<{ x: number; y: number } | null>(null);
   const [overlayDesktopSize, setOverlayDesktopSize] = useState({ width: 512, height: 560 });
+  const overlayContainerRef = useRef<HTMLDivElement | null>(null);
   const overlayResizeRef = useRef<HTMLDivElement | null>(null);
   const overlayDragRef = useRef<{
     pointerId: number;
@@ -1506,17 +1605,40 @@ export default function Star() {
       return undefined;
     }
 
+    const syncOverlayToBounds = () => {
+      setOverlayDesktopSize((currentSize) => {
+        const nextSize = clampOverlaySize(currentSize, overlayContainerRef.current);
+
+        setOverlayDesktopPosition((currentPosition) =>
+          currentPosition ? clampOverlayPosition(currentPosition, nextSize, overlayContainerRef.current) : currentPosition,
+        );
+
+        return nextSize.width === currentSize.width && nextSize.height === currentSize.height ? currentSize : nextSize;
+      });
+    };
+
     const handlePointerMove = (event: PointerEvent) => {
       if (overlayDragRef.current) {
-        const nextX = Math.max(0, overlayDragRef.current.originX + (event.clientX - overlayDragRef.current.startX));
-        const nextY = Math.max(0, overlayDragRef.current.originY + (event.clientY - overlayDragRef.current.startY));
-        setOverlayDesktopPosition({ x: nextX, y: nextY });
+        const nextX = overlayDragRef.current.originX + (event.clientX - overlayDragRef.current.startX);
+        const nextY = overlayDragRef.current.originY + (event.clientY - overlayDragRef.current.startY);
+        setOverlayDesktopPosition(
+          clampOverlayPosition({ x: nextX, y: nextY }, overlayDesktopSize, overlayContainerRef.current),
+        );
       }
 
       if (overlayResizeStateRef.current) {
-        const nextWidth = Math.max(360, overlayResizeStateRef.current.originWidth + (event.clientX - overlayResizeStateRef.current.startX));
-        const nextHeight = Math.max(280, overlayResizeStateRef.current.originHeight + (event.clientY - overlayResizeStateRef.current.startY));
-        setOverlayDesktopSize({ width: nextWidth, height: nextHeight });
+        const nextSize = clampOverlaySize(
+          {
+            width: overlayResizeStateRef.current.originWidth + (event.clientX - overlayResizeStateRef.current.startX),
+            height: overlayResizeStateRef.current.originHeight + (event.clientY - overlayResizeStateRef.current.startY),
+          },
+          overlayContainerRef.current,
+        );
+
+        setOverlayDesktopSize(nextSize);
+        setOverlayDesktopPosition((currentPosition) =>
+          currentPosition ? clampOverlayPosition(currentPosition, nextSize, overlayContainerRef.current) : currentPosition,
+        );
       }
     };
 
@@ -1527,23 +1649,26 @@ export default function Star() {
 
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("resize", syncOverlayToBounds);
+    syncOverlayToBounds();
 
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("resize", syncOverlayToBounds);
     };
-  }, []);
+  }, [overlayDesktopSize]);
 
   const overlayDesktopStyle = overlayDesktopPosition
     ? {
         top: `${overlayDesktopPosition.y}px`,
-        right: "auto",
-        bottom: "auto",
         left: `${overlayDesktopPosition.x}px`,
         width: `${overlayDesktopSize.width}px`,
         height: isOverlayCollapsed ? "auto" : `${overlayDesktopSize.height}px`,
       }
     : {
+        top: `${DESKTOP_OVERLAY_OFFSET}px`,
+        right: `${DESKTOP_OVERLAY_OFFSET}px`,
         width: `${overlayDesktopSize.width}px`,
         height: isOverlayCollapsed ? "auto" : `${overlayDesktopSize.height}px`,
       };
@@ -1592,7 +1717,7 @@ export default function Star() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#04120d] text-white lg:h-screen">
+    <div className="relative min-h-screen overflow-hidden bg-[#04120d] text-white lg:h-screen" data-testid="star-page">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(22,71,48,0.58),transparent_42%),linear-gradient(180deg,#05150f_0%,#04100c_46%,#030a08_100%)]" />
         <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(88,140,111,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(88,140,111,0.08)_1px,transparent_1px)] [background-size:140px_140px]" />
@@ -1761,7 +1886,10 @@ export default function Star() {
             <div className="mb-3">
               <div className="text-[11px] uppercase tracking-[0.34em] text-[#8ab79f]">Центральная звезда</div>
             </div>
-              <div className={`relative flex ${STAR_SCENE_INNER_MIN} flex-1 items-center justify-center overflow-visible rounded-[30px] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(68,131,96,0.2),transparent_28%),radial-gradient(circle_at_center,rgba(57,217,138,0.09),transparent_34%),linear-gradient(180deg,rgba(4,22,15,0.82),rgba(3,11,8,0.96))] ${STAR_SCENE_PADDING} lg:min-h-0`}>
+              <div
+                className={`relative flex ${STAR_SCENE_INNER_MIN} flex-1 items-center justify-center overflow-visible rounded-[30px] border border-white/8 bg-[radial-gradient(circle_at_top,rgba(68,131,96,0.2),transparent_28%),radial-gradient(circle_at_center,rgba(57,217,138,0.09),transparent_34%),linear-gradient(180deg,rgba(4,22,15,0.82),rgba(3,11,8,0.96))] ${STAR_SCENE_PADDING} lg:min-h-0`}
+                data-testid="star-scene"
+              >
 
               <div className="pointer-events-none absolute inset-0 opacity-35 [background-image:radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_80%_8%,rgba(255,255,255,0.06),transparent_20%),repeating-radial-gradient(circle_at_center,rgba(118,170,140,0.06)_0_1px,transparent_1px_44px)]" />
               <div className="pointer-events-none absolute inset-x-[12%] top-[11%] h-[28%] rounded-full bg-[#39d98a]/[0.08] blur-3xl" />
@@ -1798,7 +1926,15 @@ export default function Star() {
 
                   {displayMechanics.map((mechanic) => {
                     if (mechanic.kind === "contrast") {
-                      return <StarContrastOverlay key={mechanic.id} mechanic={mechanic} selectedPoint={selectedPoint} starPoints={starPoints} />;
+                      return (
+                        <StarContrastOverlay
+                          key={mechanic.id}
+                          mechanic={mechanic}
+                          selectedPoint={selectedPoint}
+                          starPoints={starPoints}
+                          disableMotion={prefersReducedMotion}
+                        />
+                      );
                     }
 
                     const path = getMechanicPath(mechanic, starPoints);
@@ -1830,7 +1966,11 @@ export default function Star() {
                             filter="url(#star-glow)"
                             data-mechanic-layer="core"
                           >
-                            <animate attributeName="stroke-dashoffset" from={String(visualStyle.dashOffsetFrom)} to="0" dur={visualStyle.animationDuration} repeatCount="indefinite" />
+                            <StrokeDashAnimation
+                              from={visualStyle.dashOffsetFrom}
+                              duration={visualStyle.animationDuration}
+                              disabled={prefersReducedMotion}
+                            />
                           </path>
                           <path
                             d={path}
@@ -1844,7 +1984,11 @@ export default function Star() {
                             filter="url(#star-glow)"
                             data-mechanic-layer="accent"
                           >
-                            <animate attributeName="stroke-dashoffset" from={String(visualStyle.accentDashOffsetFrom)} to="0" dur={visualStyle.animationDuration} repeatCount="indefinite" />
+                            <StrokeDashAnimation
+                              from={visualStyle.accentDashOffsetFrom}
+                              duration={visualStyle.animationDuration}
+                              disabled={prefersReducedMotion}
+                            />
                           </path>
                           <g transform={`translate(${badgePosition.x}, ${badgePosition.y - 22})`}>
                             <rect
@@ -1892,7 +2036,11 @@ export default function Star() {
                             filter="url(#star-glow)"
                             data-mechanic-layer="core"
                           >
-                            <animate attributeName="stroke-dashoffset" from={String(visualStyle.dashOffsetFrom)} to="0" dur={visualStyle.animationDuration} repeatCount="indefinite" />
+                            <StrokeDashAnimation
+                              from={visualStyle.dashOffsetFrom}
+                              duration={visualStyle.animationDuration}
+                              disabled={prefersReducedMotion}
+                            />
                           </path>
                           <path
                             d={path}
@@ -1906,7 +2054,11 @@ export default function Star() {
                             filter="url(#star-glow)"
                             data-mechanic-layer="accent"
                           >
-                            <animate attributeName="stroke-dashoffset" from={String(visualStyle.accentDashOffsetFrom)} to="0" dur={visualStyle.animationDuration} repeatCount="indefinite" />
+                            <StrokeDashAnimation
+                              from={visualStyle.accentDashOffsetFrom}
+                              duration={visualStyle.animationDuration}
+                              disabled={prefersReducedMotion}
+                            />
                           </path>
                         </g>
                       );
@@ -1953,6 +2105,7 @@ export default function Star() {
                         key={`node-${point.index}`}
                         onClick={() => selectPoint(point.index)}
                         style={{ cursor: "pointer" }}
+                        data-testid={`star-point-${point.index}`}
                       >
                         <title>{tooltip || `${POINT_TOOLTIP_FALLBACK} ${point.index}`}</title>
                         <line
@@ -2071,12 +2224,13 @@ export default function Star() {
 
               {contextPanelModel.blocks.length > 0 ? (
                 <div
-                  className="pointer-events-none absolute inset-x-3 bottom-3 z-[12] flex justify-center sm:inset-x-4 sm:bottom-4 lg:inset-x-auto lg:right-5 lg:top-5 lg:bottom-auto lg:justify-end"
+                  ref={overlayContainerRef}
+                  className="pointer-events-none absolute inset-x-3 bottom-3 z-[12] flex justify-center sm:inset-x-4 sm:bottom-4 lg:inset-0"
                   data-testid="star-selection-overlay"
                 >
                   <div
                     ref={overlayResizeRef}
-                    className="pointer-events-auto w-full max-w-[1120px] overflow-hidden rounded-[28px] border border-white/12 bg-[linear-gradient(180deg,rgba(7,22,15,0.92),rgba(4,13,9,0.95))] shadow-[0_28px_70px_rgba(0,0,0,0.34)] ring-1 ring-black/18 backdrop-blur-2xl lg:max-w-none"
+                    className="pointer-events-auto w-full max-w-[1120px] overflow-hidden rounded-[28px] border border-white/12 bg-[linear-gradient(180deg,rgba(7,22,15,0.92),rgba(4,13,9,0.95))] shadow-[0_28px_70px_rgba(0,0,0,0.34)] ring-1 ring-black/18 backdrop-blur-2xl lg:absolute lg:max-w-none"
                     style={overlayDesktopStyle}
                     data-testid="star-selection-overlay-window"
                   >

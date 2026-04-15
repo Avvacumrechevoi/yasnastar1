@@ -3,7 +3,6 @@
  * Глобальная тема подчинена архивному астролябийному модерну: тёплая бумага, графитовые подписи, латунные акценты и мягкие стеклянные вставки.
  * Визуальная глубина строится на бумажной фактуре, тонких контурах и спокойных тенях, а не на тяжёлых контрастах.
  */
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 @custom-variant dark (&:is(.dark *));
@@ -233,5 +232,38 @@
 
   .yasna-scroll::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, rgba(130, 105, 82, 0.98), rgba(92, 70, 52, 0.98));
+  }
+
+  .yasna-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-position: center;
+    background-size: 120px 120px;
+    mask-image: radial-gradient(circle at center, black 42%, transparent 88%);
+  }
+
+  .yasna-noise {
+    background-image:
+      radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px),
+      radial-gradient(circle at 76% 16%, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px),
+      radial-gradient(circle at 32% 80%, rgba(255, 255, 255, 0.1) 0 1px, transparent 1px),
+      radial-gradient(circle at 80% 76%, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px);
+    background-size: 180px 180px, 220px 220px, 200px 200px, 160px 160px;
+    mix-blend-mode: soft-light;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

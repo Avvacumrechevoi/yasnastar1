@@ -1,4 +1,4 @@
-import { asc } from "drizzle-orm";
+import { asc, eq, notInArray, sql } from "drizzle-orm";
 import { yasnaLessons, yasnaMechanics, yasnaNotes, yasnaPoints, yasnas } from "../../drizzle/schema";
 import { getDb } from "../db";
 import {
@@ -54,6 +54,18 @@ function getFallbackSnapshot(): YasnaCatalogSnapshot {
     mechanicGroups: MECHANIC_GROUPS,
     source: "fallback",
   };
+}
+
+function groupRowsByYasnaId<T extends { yasnaId: string }>(rows: T[]) {
+  return rows.reduce(
+    (acc, row) => {
+      const currentRows = acc.get(row.yasnaId) ?? [];
+      currentRows.push(row);
+      acc.set(row.yasnaId, currentRows);
+      return acc;
+    },
+    new Map<string, T[]>(),
+  );
 }
 
 async function seedYasnaTables() {
@@ -140,30 +152,69 @@ async function seedYasnaTables() {
     description: mechanic.description,
     sortOrder: index,
   }));
+  const pointRowsByYasnaId = groupRowsByYasnaId(pointRows);
+  const lessonRowsByYasnaId = groupRowsByYasnaId(lessonRows);
+  const noteRowsByYasnaId = groupRowsByYasnaId(noteRows);
+  const expectedMechanicIds = MECHANICS.map(mechanic => mechanic.id);
 
   await db.transaction(async tx => {
-    await tx.delete(yasnaLessons);
-    await tx.delete(yasnaNotes);
-    await tx.delete(yasnaPoints);
-    await tx.delete(yasnas);
-    await tx.delete(yasnaMechanics);
+    await tx.insert(yasnas).values(yasnaRows).onDuplicateKeyUpdate({
+      set: {
+        family: sql`values(family)`,
+        title: sql`values(title)`,
+        summary: sql`values(summary)`,
+        lessonCount: sql`values(lessonCount)`,
+        mechanicsJson: sql`values(mechanicsJson)`,
+        sortOrder: sql`values(sortOrder)`,
+        updatedAt: sql`now()`,
+      },
+    });
 
-    await tx.insert(yasnas).values(yasnaRows);
-
-    if (pointRows.length > 0) {
-      await tx.insert(yasnaPoints).values(pointRows);
+    if (expectedYasnaIds.length > 0) {
+      await tx.delete(yasnas).where(notInArray(yasnas.id, expectedYasnaIds));
     }
 
-    if (lessonRows.length > 0) {
-      await tx.insert(yasnaLessons).values(lessonRows);
+    await tx.insert(yasnaMechanics).values(mechanicRows).onDuplicateKeyUpdate({
+      set: {
+        title: sql`values(title)`,
+        shortTitle: sql`values(shortTitle)`,
+        alias: sql`values(alias)`,
+        category: sql`values(category)`,
+        kind: sql`values(kind)`,
+        pointIndicesJson: sql`values(pointIndicesJson)`,
+        stroke: sql`values(stroke)`,
+        fill: sql`values(fill)`,
+        glow: sql`values(glow)`,
+        description: sql`values(description)`,
+        sortOrder: sql`values(sortOrder)`,
+        updatedAt: sql`now()`,
+      },
+    });
+
+    if (expectedMechanicIds.length > 0) {
+      await tx.delete(yasnaMechanics).where(notInArray(yasnaMechanics.id, expectedMechanicIds));
     }
 
-    if (noteRows.length > 0) {
-      await tx.insert(yasnaNotes).values(noteRows);
-    }
+    for (const yasnaId of expectedYasnaIds) {
+      await tx.delete(yasnaLessons).where(eq(yasnaLessons.yasnaId, yasnaId));
+      await tx.delete(yasnaNotes).where(eq(yasnaNotes.yasnaId, yasnaId));
+      await tx.delete(yasnaPoints).where(eq(yasnaPoints.yasnaId, yasnaId));
 
-    if (mechanicRows.length > 0) {
-      await tx.insert(yasnaMechanics).values(mechanicRows);
+      const nextPointRows = pointRowsByYasnaId.get(yasnaId) ?? [];
+      const nextLessonRows = lessonRowsByYasnaId.get(yasnaId) ?? [];
+      const nextNoteRows = noteRowsByYasnaId.get(yasnaId) ?? [];
+
+      if (nextPointRows.length > 0) {
+        await tx.insert(yasnaPoints).values(nextPointRows);
+      }
+
+      if (nextLessonRows.length > 0) {
+        await tx.insert(yasnaLessons).values(nextLessonRows);
+      }
+
+      if (nextNoteRows.length > 0) {
+        await tx.insert(yasnaNotes).values(nextNoteRows);
+      }
     }
   });
 }

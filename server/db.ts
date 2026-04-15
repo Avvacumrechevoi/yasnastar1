@@ -18,7 +18,7 @@ export async function getDb() {
   return _db;
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
+export async function upsertUser(user: InsertUser): Promise<boolean> {
   if (!user.openId) {
     throw new Error("User openId is required for upsert");
   }
@@ -26,7 +26,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   const db = await getDb();
   if (!db) {
     console.warn("[Database] Cannot upsert user: database not available");
-    return;
+    return false;
   }
 
   try {
@@ -71,6 +71,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
     });
+    return true;
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
