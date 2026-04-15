@@ -152,6 +152,7 @@ function Home() {
                       type="button"
                       className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white transition hover:border-white/22 hover:bg-white/[0.08] md:hidden"
                       aria-label="Открыть меню"
+                      data-testid="home-mobile-menu-trigger"
                     >
                       <Menu className="h-5 w-5" />
                     </button>

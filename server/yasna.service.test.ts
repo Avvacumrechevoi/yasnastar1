@@ -402,4 +402,36 @@ describe("yasna.router", () => {
     expect(state.negotiation.activePreset?.recommendedMechanicIds.length).toBeGreaterThan(0);
     expect(Array.isArray(state.inspector.lessonPreviews)).toBe(true);
   });
+
+  it("exposes admin catalog workflow for status and sync", async () => {
+    const caller = appRouter.createCaller({
+      req: {} as never,
+      res: {} as never,
+      user: { role: "admin" } as never,
+    });
+
+    const status = await caller.yasna.adminStatus();
+    const syncResult = await caller.yasna.adminSync();
+
+    expect(status.defaultYasnaId).toBeTruthy();
+    expect(status.yasnaCount).toBeGreaterThan(0);
+    expect(status.mechanicCount).toBeGreaterThan(0);
+    expect(["db", "fallback"]).toContain(status.runtimeSource);
+
+    expect(syncResult.defaultYasnaId).toBeTruthy();
+    expect(syncResult.yasnaCount).toBeGreaterThan(0);
+    expect(syncResult.mechanicCount).toBeGreaterThan(0);
+    expect(["db", "fallback"]).toContain(syncResult.source);
+  });
+
+  it("rejects admin yasna workflow for non-admin users", async () => {
+    const caller = appRouter.createCaller({
+      req: {} as never,
+      res: {} as never,
+      user: { role: "user" } as never,
+    });
+
+    await expect(caller.yasna.adminStatus()).rejects.toThrow();
+    await expect(caller.yasna.adminSync()).rejects.toThrow();
+  });
 });
