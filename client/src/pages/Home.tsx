@@ -13,8 +13,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { productFigures, type ProductFigure } from "@/pages/home/productModules";
-import { ArrowRight, Compass } from "lucide-react";
+import { ArrowRight, Compass, Menu } from "lucide-react";
 import { Link } from "wouter";
 
 type NavigationItem = {
@@ -81,6 +90,8 @@ function FigureGlyph({ kind }: { kind: ProductFigure["kind"] }) {
 }
 
 function Home() {
+  const navLinkClass = "rounded-full px-4 py-2 text-sm font-medium text-white/72 transition hover:bg-white/8 hover:text-white";
+
   return (
     <main className="min-h-screen bg-[#040404] text-white">
       <div className="relative overflow-hidden">
@@ -111,7 +122,7 @@ function Home() {
                     <a
                       key={item.label}
                       href={item.href}
-                      className="rounded-full px-4 py-2 text-sm font-medium text-white/72 transition hover:bg-white/8 hover:text-white"
+                      className={navLinkClass}
                     >
                       {item.label}
                     </a>
@@ -119,7 +130,7 @@ function Home() {
                     <Link
                       key={item.label}
                       href={item.href}
-                      className="rounded-full px-4 py-2 text-sm font-medium text-white/72 transition hover:bg-white/8 hover:text-white"
+                      className={navLinkClass}
                     >
                       {item.label}
                     </Link>
@@ -127,18 +138,76 @@ function Home() {
                 )}
               </nav>
 
-              <Link
-                href="/star"
-                className="inline-flex items-center justify-center rounded-full bg-[#38e27d] px-5 py-2.5 text-sm font-semibold text-black transition hover:translate-y-[-1px] hover:bg-[#4bef8d]"
-              >
-                Открыть звезду
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/star"
+                  className="inline-flex items-center justify-center rounded-full bg-[#38e27d] px-5 py-2.5 text-sm font-semibold text-black transition hover:translate-y-[-1px] hover:bg-[#4bef8d]"
+                >
+                  Открыть звезду
+                </Link>
+
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/12 bg-white/[0.04] text-white transition hover:border-white/22 hover:bg-white/[0.08] md:hidden"
+                      aria-label="Открыть меню"
+                    >
+                      <Menu className="h-5 w-5" />
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    className="border-white/10 bg-[#08100d] text-white sm:max-w-[22rem]"
+                  >
+                    <SheetHeader className="border-b border-white/10 pb-4">
+                      <SheetTitle className="text-left text-white">Навигация по Ясне</SheetTitle>
+                      <SheetDescription className="text-left text-white/60">
+                        Быстрые переходы к основным сценариям интерфейса.
+                      </SheetDescription>
+                    </SheetHeader>
+
+                    <div className="flex flex-1 flex-col gap-3 px-4 pb-6">
+                      {navigation.map(item =>
+                        item.kind === "anchor" ? (
+                          <SheetClose asChild key={item.label}>
+                            <a
+                              href={item.href}
+                              className="rounded-[20px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white transition hover:border-[#38e27d]/30 hover:bg-[#38e27d]/[0.08]"
+                            >
+                              {item.label}
+                            </a>
+                          </SheetClose>
+                        ) : (
+                          <SheetClose asChild key={item.label}>
+                            <Link
+                              href={item.href}
+                              className="rounded-[20px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-medium text-white transition hover:border-[#38e27d]/30 hover:bg-[#38e27d]/[0.08]"
+                            >
+                              {item.label}
+                            </Link>
+                          </SheetClose>
+                        )
+                      )}
+
+                      <div className="mt-3 rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(56,226,125,0.12)_0%,rgba(255,255,255,0.03)_100%)] p-4">
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#38e27d]">
+                          Быстрый старт
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-white/68">
+                          Откройте звезду, если нужно сразу работать с механиками, или перейдите в каталог, чтобы выбрать подходящую Ясну.
+                        </p>
+                      </div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </div>
           </header>
 
           <section
             id="hero"
-            className="relative flex flex-1 items-center overflow-hidden rounded-[40px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,15,15,0.96)_0%,rgba(5,5,5,0.985)_100%)] px-6 py-14 shadow-[0_30px_120px_rgba(0,0,0,0.45)] sm:px-10 lg:px-14 lg:py-18"
+            className="relative flex flex-1 items-center overflow-hidden rounded-[40px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,15,15,0.96)_0%,rgba(5,5,5,0.985)_100%)] px-6 py-14 shadow-[0_30px_120px_rgba(0,0,0,0.45)] sm:px-10 lg:px-14 lg:py-[4.5rem]"
           >
             <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_top,rgba(56,226,125,0.16),transparent_62%)]" />
             <div className="pointer-events-none absolute left-1/2 top-[38%] h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#38e27d]/[0.08] blur-3xl" />

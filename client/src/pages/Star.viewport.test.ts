@@ -352,8 +352,7 @@ describe("Star reduced desktop viewport interactions", () => {
     const overlayAfterPoint = container.querySelector('[data-testid="star-selection-overlay"]') as HTMLDivElement | null;
     expect(overlayAfterPoint).toBeTruthy();
     expect(overlayAfterPoint?.className).toContain("absolute");
-    expect(overlayAfterPoint?.className).toContain("lg:right-5");
-    expect(overlayAfterPoint?.className).toContain("lg:top-5");
+    expect(overlayAfterPoint?.className).toContain("lg:inset-0");
     expect(overlayAfterPoint?.textContent).toContain("Растекание");
 
     const waterMechanicButton = findButtonByText(container, "Вода");
@@ -379,6 +378,7 @@ describe("Star reduced desktop viewport interactions", () => {
     expect(overlayResetButton?.textContent).toContain("Сбросить");
     expect(overlayResizeHandle).toBeTruthy();
     expect(overlayCard).toBeTruthy();
+    expect(overlayWindow?.className).toContain("lg:absolute");
     expect(overlayCard?.className).toContain("lg:w-[32rem]");
     expect(overlayCard?.textContent).toContain("Растекание");
     expect(overlayCard?.textContent).toContain("Круговорот воды");

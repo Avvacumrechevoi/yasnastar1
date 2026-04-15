@@ -11,6 +11,7 @@ import { STATIC_PREVIEW_MODE } from "@/pages/star/staticPreview";
 const Home = lazy(() => import("@/pages/Home"));
 const StarPage = lazy(() => import("@/pages/Star"));
 const YasnasPage = lazy(() => import("@/pages/Yasnas"));
+const NotFoundPage = lazy(() => import("@/pages/NotFound"));
 
 function RouteFallback() {
   return (
@@ -34,7 +35,7 @@ function App() {
           <Route path="/" component={Home} />
           <Route path="/star" component={StarPage} />
           <Route path="/yasnas" component={YasnasPage} />
-          <Route component={Home} />
+          <Route component={NotFoundPage} />
         </Switch>
       </Suspense>
     </Router>

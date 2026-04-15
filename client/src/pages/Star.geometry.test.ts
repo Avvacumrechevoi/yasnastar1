@@ -38,9 +38,11 @@ describe("Star geometry regressions", () => {
   it("uses a wider two-column desktop grid after removing the right inspector", () => {
     const layout = getStarLayoutClasses();
 
-    expect(layout.containerMax).toContain("1120");
-    expect(layout.sceneMin).toContain("920");
-    expect(layout.sceneInnerMin).toContain("900");
+    expect(layout.containerMax).toContain("min(78svh,1120px)");
+    expect(layout.sceneMin).toContain("72svh");
+    expect(layout.sceneMin).toContain("sm:min-h-[920px]");
+    expect(layout.sceneInnerMin).toContain("68svh");
+    expect(layout.sceneInnerMin).toContain("sm:min-h-[900px]");
     expect(layout.scenePadding).toContain("px-1.5");
     expect(layout.gridTemplate).toContain("lg:max-h-[calc(100vh-9.5rem)]");
     expect(layout.gridTemplate).toContain("108px_minmax(0,1fr)");
@@ -55,9 +57,9 @@ describe("Star geometry regressions", () => {
   it("locks the current scene to a medium desktop scale instead of re-expanding it on larger breakpoints", () => {
     const layout = getStarLayoutClasses();
 
-    expect(layout.containerMax).toBe("h-full w-auto max-h-[1120px] max-w-full");
-    expect(layout.sceneMin).toBe("min-h-[920px]");
-    expect(layout.sceneInnerMin).toBe("min-h-[900px]");
+    expect(layout.containerMax).toBe("h-full w-full max-h-[min(78svh,1120px)] max-w-full lg:w-auto lg:max-h-[1120px]");
+    expect(layout.sceneMin).toBe("min-h-[72svh] sm:min-h-[920px]");
+    expect(layout.sceneInnerMin).toBe("min-h-[68svh] sm:min-h-[900px]");
     expect(layout.containerMax).not.toContain("xl:max-h");
     expect(layout.containerMax).not.toContain("2xl:max-h");
     expect(layout.sceneMin).not.toContain("md:min-h");

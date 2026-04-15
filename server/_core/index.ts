@@ -7,6 +7,9 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { refreshYasnaRuntimeCatalog } from "../yasna/runtimeCatalog";
+
+const API_BODY_LIMIT = "2mb";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -30,9 +33,9 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use(express.json({ limit: API_BODY_LIMIT }));
+  app.use(express.urlencoded({ limit: API_BODY_LIMIT, extended: true }));
+  await refreshYasnaRuntimeCatalog({ force: true });
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API
