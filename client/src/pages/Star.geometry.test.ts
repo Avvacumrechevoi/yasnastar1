@@ -35,7 +35,7 @@ describe("Star geometry regressions", () => {
     });
   });
 
-  it("uses a larger single full-width star scene after moving mechanics into the header", () => {
+  it("uses a narrow left mechanic rail with a wide central star scene", () => {
     const layout = getStarLayoutClasses();
 
     expect(layout.containerMax).toContain("min(84svh,1280px)");
@@ -44,7 +44,8 @@ describe("Star geometry regressions", () => {
     expect(layout.sceneInnerMin).toContain("74svh");
     expect(layout.sceneInnerMin).toContain("sm:min-h-[940px]");
     expect(layout.scenePadding).toContain("px-1.5");
-    expect(layout.gridTemplate).toBe("mt-4 flex min-h-0 flex-1");
+    expect(layout.gridTemplate).toContain("grid-cols-[4.5rem_minmax(0,1fr)]");
+    expect(layout.gridTemplate).toContain("lg:h-[calc(100vh-7.75rem)]");
     expect(layout.sideColumnDesktopLayout).toContain("lg:max-h-full");
     expect(layout.sideColumnDesktopLayout).toContain("lg:self-stretch");
     expect(layout.centerColumnDesktopLayout).toContain("lg:self-stretch");
@@ -65,10 +66,12 @@ describe("Star geometry regressions", () => {
     expect(layout.sceneInnerMin).not.toContain("2xl:min-h");
   });
 
-  it("keeps the desktop scene bounded while the wrapper stays single-column", () => {
+  it("keeps the desktop scene bounded while the wrapper uses a narrow sidebar grid", () => {
     const layout = getStarLayoutClasses();
 
-    expect(layout.gridTemplate).toBe("mt-4 flex min-h-0 flex-1");
+    expect(layout.gridTemplate).toContain("grid-cols-[4.5rem_minmax(0,1fr)]");
+    expect(layout.gridTemplate).toContain("lg:max-h-[calc(100vh-7.75rem)]");
+    expect(layout.gridTemplate).toContain("lg:min-h-0");
   });
 
   it("makes key line mechanics visually stronger than generic connectors", () => {

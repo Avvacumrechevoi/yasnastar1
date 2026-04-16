@@ -11,6 +11,7 @@ import { Link } from "wouter";
 import { Check, ChevronLeft, ChevronsUpDown, X } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ContextPanelModel } from "./star/contextPanel";
 import { useStarWorkspace } from "./star/useStarWorkspace";
 
@@ -275,7 +276,7 @@ const STAR_CONTAINER_MAX = "h-full w-full max-h-[min(84svh,1280px)] max-w-full l
 const STAR_SCENE_MIN = "min-h-[78svh] sm:min-h-[980px]";
 const STAR_SCENE_INNER_MIN = "min-h-[74svh] sm:min-h-[940px]";
 const STAR_SCENE_PADDING = "px-1.5 py-1.5 sm:px-2.5 sm:py-2.5";
-const GRID_TEMPLATE = "mt-4 flex min-h-0 flex-1";
+const GRID_TEMPLATE = "mt-3 grid min-h-0 flex-1 grid-cols-[4.5rem_minmax(0,1fr)] gap-2 lg:h-[calc(100vh-7.75rem)] lg:max-h-[calc(100vh-7.75rem)] lg:min-h-0";
 const SIDE_COLUMN_DESKTOP_LAYOUT = "lg:h-full lg:max-h-full lg:self-stretch lg:overflow-y-auto lg:overscroll-contain";
 const CENTER_COLUMN_DESKTOP_LAYOUT = "lg:h-full lg:min-h-0 lg:self-stretch";
 const RIGHT_PANEL_COUNT_SUFFIX = "активно";
@@ -1309,28 +1310,28 @@ function StarMechanicGlyph({
 
 function StarMechanicListButton({ mechanic, isActive, onClick, tooltip }: StarMechanicListButtonProps) {
   const compactCode = getMechanicCompactCode(mechanic);
-
-  return (
+  const label = getMechanicButtonLabel(mechanic);
+  const button = (
     <button
       type="button"
       onClick={onClick}
       title={tooltip}
-      aria-label={mechanic.shortTitle}
+      aria-label={label}
       aria-pressed={isActive}
       data-state={isActive ? "active" : "inactive"}
       data-testid={`star-mechanic-button-${mechanic.id}`}
-      className={`group relative inline-flex h-12 w-12 items-center justify-center rounded-[16px] border transition ${
+      className={`group relative inline-flex h-11 w-11 items-center justify-center rounded-[15px] border transition ${
         isActive
-          ? "border-[#39d98a]/58 bg-[linear-gradient(180deg,rgba(15,62,38,0.94),rgba(10,38,24,0.96))] text-white shadow-[0_0_0_1px_rgba(57,217,138,0.2),0_14px_30px_rgba(0,0,0,0.22)]"
-          : "border-white/10 bg-black/16 text-white/72 hover:border-white/18 hover:bg-white/8 hover:text-white"
+          ? "border-[#39d98a]/58 bg-[linear-gradient(180deg,rgba(15,62,38,0.94),rgba(10,38,24,0.96))] text-white shadow-[0_0_0_1px_rgba(57,217,138,0.2),0_10px_24px_rgba(0,0,0,0.18)]"
+          : "border-white/10 bg-black/18 text-white/72 hover:border-white/18 hover:bg-white/8 hover:text-white"
       }`}
     >
-      <span className="absolute left-1.5 top-1.5 text-[8px] font-semibold uppercase tracking-[0.18em] text-white/55">
+      <span className="absolute left-1 top-1 text-[7px] font-semibold uppercase tracking-[0.16em] text-white/50">
         {compactCode}
       </span>
       <StarMechanicGlyph mechanic={mechanic} isActive={isActive} />
       <span
-        className={`absolute bottom-1.5 right-1.5 h-1.5 w-1.5 rounded-full transition ${isActive ? "" : "opacity-85 group-hover:opacity-100"}`}
+        className={`absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full transition ${isActive ? "" : "opacity-85 group-hover:opacity-100"}`}
         style={{
           background: isActive ? "#39d98a" : mechanic.stroke,
           boxShadow: isActive ? `0 0 14px ${mechanic.glow}` : "none",
@@ -1338,6 +1339,17 @@ function StarMechanicListButton({ mechanic, isActive, onClick, tooltip }: StarMe
       />
     </button>
   );
+
+  return tooltip ? (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent side="right" sideOffset={8} className="border border-white/10 bg-[#09120f] px-3 py-2 text-white shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8ab79f]">{compactCode}</div>
+        <div className="mt-1 text-sm font-medium text-white">{label}</div>
+        <div className="mt-1 max-w-[18rem] text-[12px] leading-5 text-white/68">{tooltip}</div>
+      </TooltipContent>
+    </Tooltip>
+  ) : button;
 }
 
 function getMechanicVisualStyle(mechanic: Pick<Mechanic, "id" | "kind">) {
@@ -1827,48 +1839,14 @@ export default function Star() {
           </Link>
         </div>
 
-        <div className="relative z-[12] mt-2 rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,27,18,0.92),rgba(5,16,11,0.92))] px-2.5 py-2 shadow-[0_14px_40px_rgba(0,0,0,0.16)] backdrop-blur-xl sm:px-3">
-          <div className="flex flex-col gap-2">
-            <div className="rounded-[18px] border border-white/10 bg-black/14 px-2.5 py-2">
-              <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-between">
-                <div className="space-y-0.5">
-                  <div className="text-[10px] uppercase tracking-[0.32em] text-[#8ab79f]">Механики</div>
-                  <p className="text-[11px] leading-4 text-white/46">
-                    Компактная панель управления активными фигурами звезды.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={toggleAllMechanics}
-                  className={`inline-flex h-10 shrink-0 items-center justify-center rounded-full border px-3 py-2 text-[11px] font-medium text-white transition ${
-                    allMechanicsSelected
-                      ? "border-white/14 bg-white/8 hover:border-white/24 hover:bg-white/12"
-                      : "border-[#39d98a]/25 bg-[#39d98a]/10 hover:border-[#39d98a]/55 hover:bg-[#39d98a]/16"
-                  }`}
-                >
-                  {allMechanicsSelected ? "Сбросить" : "Все механики"}
-                </button>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {mechanics.map((mechanic) => (
-                  <StarMechanicListButton
-                    key={mechanic.id}
-                    mechanic={mechanic}
-                    isActive={activeMechanicIds.includes(mechanic.id)}
-                    onClick={() => toggleMechanic(mechanic.id)}
-                    tooltip={getTooltipText(mechanic.alias, mechanic.description)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:gap-2.5">
-              <div className="flex flex-wrap items-center gap-2 xl:shrink-0">
+        <div className="relative z-[12] mt-2 rounded-[20px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,27,18,0.92),rgba(5,16,11,0.92))] px-2 py-2 shadow-[0_14px_40px_rgba(0,0,0,0.16)] backdrop-blur-xl sm:px-2.5">
+          <div className="flex flex-col gap-1.5 xl:flex-row xl:items-center xl:gap-2">
+            <div className="flex flex-wrap items-center gap-2 xl:shrink-0">
                 <Popover open={isYasnaLibraryOpen} onOpenChange={setIsYasnaLibraryOpen}>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="inline-flex h-9 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[13px] font-medium text-white transition hover:border-[#39d98a]/35 hover:bg-[#39d98a]/[0.1]"
+                      className="inline-flex h-8.5 items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 text-[12px] font-medium text-white transition hover:border-[#39d98a]/35 hover:bg-[#39d98a]/[0.1]"
                     >
                       <span>{yasnaLibraryPanelCopy.triggerLabel}</span>
                       <ChevronsUpDown className="h-4 w-4 text-white/70" />
@@ -1918,7 +1896,7 @@ export default function Star() {
                 </Popover>
               </div>
 
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 xl:flex xl:justify-between xl:gap-3">
                 {selectedLibraryYasnas.length > 0 ? (
                   <div className="yasna-scroll overflow-x-auto pb-0.5">
                     <div className="flex min-w-max items-center gap-1.5">
@@ -1935,7 +1913,7 @@ export default function Star() {
                             type="button"
                             onClick={() => selectYasna(yasna.id)}
                             title={getTooltipText(yasna.family, yasna.summary)}
-                            className="inline-flex items-center gap-1.5 rounded-full px-1.5 py-0.5 text-[12px]"
+                            className="inline-flex items-center gap-1.5 rounded-full px-1.5 py-0.5 text-[11px]"
                           >
                             <span
                               className={`h-2 w-2 rounded-full ${yasna.isActive ? "bg-[#39d98a] shadow-[0_0_12px_rgba(57,217,138,0.72)]" : "bg-white/28"}`}
@@ -1959,11 +1937,45 @@ export default function Star() {
                   </div>
                 ) : null}
               </div>
-            </div>
           </div>
         </div>
 
         <div className={GRID_TEMPLATE}>
+          <aside className={`yasna-scroll flex min-h-0 flex-col items-center gap-1.5 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(9,25,17,0.94),rgba(4,13,10,0.96))] px-2 py-2 shadow-[0_20px_52px_rgba(0,0,0,0.2)] backdrop-blur-xl ${SIDE_COLUMN_DESKTOP_LAYOUT}`}>
+            <div className="text-[9px] uppercase tracking-[0.3em] text-[#8ab79f]">Мех</div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={toggleAllMechanics}
+                  aria-label={allMechanicsSelected ? "Сбросить все механики" : "Включить все механики"}
+                  className={`inline-flex h-11 w-11 items-center justify-center rounded-[15px] border transition ${
+                    allMechanicsSelected
+                      ? "border-white/14 bg-white/8 hover:border-white/24 hover:bg-white/12"
+                      : "border-[#39d98a]/25 bg-[#39d98a]/10 hover:border-[#39d98a]/55 hover:bg-[#39d98a]/16"
+                  }`}
+                >
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/78">Все</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8} className="border border-white/10 bg-[#09120f] px-3 py-2 text-white shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+                {allMechanicsSelected ? "Сбросить все механики" : "Включить все механики"}
+              </TooltipContent>
+            </Tooltip>
+            <div className="h-px w-full bg-white/8" />
+            <div className="yasna-scroll flex flex-1 flex-col items-center gap-1.5 overflow-y-auto pr-0.5">
+              {mechanics.map((mechanic) => (
+                <StarMechanicListButton
+                  key={mechanic.id}
+                  mechanic={mechanic}
+                  isActive={activeMechanicIds.includes(mechanic.id)}
+                  onClick={() => toggleMechanic(mechanic.id)}
+                  tooltip={getTooltipText(mechanic.alias, mechanic.description)}
+                />
+              ))}
+            </div>
+          </aside>
+
           <section className={`flex w-full ${STAR_SCENE_MIN} ${CENTER_COLUMN_DESKTOP_LAYOUT} flex-col overflow-hidden rounded-[34px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.025))] p-1 shadow-[0_30px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:p-1.5`}>
             <div className="mb-2">
               <div className="text-[10px] uppercase tracking-[0.32em] text-[#8ab79f]">Центральная звезда</div>
